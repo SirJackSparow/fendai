@@ -66,3 +66,21 @@ Java_com_dg_fendai_core_LlamaEngine_startCompletion(JNIEnv* env, jobject thiz, j
     env->ReleaseStringUTFChars(prompt, promptCstr);
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_dg_fendai_core_LlamaEngine_completionLoop(JNIEnv* env, jobject thiz, jlong modelPtr) {
+    auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    try {
+        std::string response = llmInference->completionLoop();
+        return env->NewStringUTF(response.c_str());
+    } catch (std::runtime_error& error) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+        return nullptr;
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_stopCompletion(JNIEnv* env, jobject thiz, jlong modelPtr) {
+    auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    llmInference->stopCompletion();
+}
+
