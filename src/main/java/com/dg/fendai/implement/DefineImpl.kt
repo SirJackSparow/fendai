@@ -16,7 +16,7 @@ class DefineImpl : DefineInterface {
                 val instance = kClass.createInstance()
 
                 kClass.declaredFunctions.forEach { function ->
-                    val routePath = "${prompt.prompt}/"
+                    val routePath = "${prompt.prompt}/${function.name}"
                     routes[routePath] = instance to function.name
                 }
             }
@@ -26,8 +26,8 @@ class DefineImpl : DefineInterface {
         }
     }
 
-    override fun call(path: String, vararg args: Any?): Any? {
-        val (instance, methodName) = routes[path] ?: return  "404 Not found"
+    override fun prompt(prompting: String, vararg args: Any?): Any? {
+        val (instance, methodName) = routes[prompting] ?: return  "404 Not found"
 
         val function = instance::class.declaredFunctions.first{ it.name == methodName}
         return function.call(instance, *args)

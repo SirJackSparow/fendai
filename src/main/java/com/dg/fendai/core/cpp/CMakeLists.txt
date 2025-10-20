@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("llama_jni")
 
-set(LLAMA_DIR_RELATIVE "../../../../../../../../llama.cpp")
+set(LLAMA_DIR_RELATIVE "../../../../../../../../../llama.cpp")
 
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 

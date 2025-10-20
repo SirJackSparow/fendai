@@ -1,4 +1,4 @@
-package com.dg.fendai.core.manager
+package com.dg.fendai.implement.manager
 
 import com.dg.fendai.core.LlamaEngine
 

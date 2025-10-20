@@ -1,4 +1,4 @@
-package com.dg.fendai.core.manager
+package com.dg.fendai.implement.manager
 
 import com.dg.fendai.core.LlamaEngine
 import kotlinx.coroutines.CancellationException
@@ -13,12 +13,25 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 
+
 class FendAIManagerImplementation : FendAIManager {
 
     private val instance = LlamaEngine()
     private var modelInitJob: Job? = null
     private var isInstanceLoaded = false
 
+    /**
+     * Sends a message to the Llama model and retrieves the complete response.
+     *
+     * This function communicates with the underlying [LlamaEngine] to get a response for the given
+     * message. It collects the response as a stream of text pieces and concatenates them into a
+     * single string. The operation is cancellable and handles exceptions gracefully by returning
+     * any partial result collected before the interruption or error.
+     *
+     * @param message The message string to be sent to the model.
+     * @return A [String] containing the full response from the model. If an error or cancellation
+     * occurs, it may return a partial response or an error message appended to the result.
+     */
     override suspend fun sendMessage(message: String): String = coroutineScope {
         val result = StringBuilder()
 
