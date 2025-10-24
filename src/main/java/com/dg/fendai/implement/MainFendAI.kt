@@ -1,6 +1,8 @@
 package com.dg.fendai.implement
 
 import android.content.Context
+import com.dg.fendai.implement.manager.FendAIManager
+import com.dg.fendai.implement.manager.FendAIManagerImplementation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlin.reflect.KClass
@@ -9,6 +11,8 @@ object MainFendAI {
     private var initialized = false
     private lateinit var appContext: Context
     private val router: DefineInterface = DefineImpl()
+    private val fendAIManager: FendAIManager = FendAIManagerImplementation()
+
 
     fun init(context: Context) {
         if (initialized) return
@@ -51,5 +55,4 @@ object MainFendAI {
     private fun ensureInitialized() {
         if (!initialized) throw IllegalStateException("MyAI not initialized! Call MyAI.init(context) first.")
     }
-
 }

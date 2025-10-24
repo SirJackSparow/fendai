@@ -28,7 +28,6 @@ class DefineImpl : DefineInterface {
 
     override fun prompt(prompting: String, vararg args: Any?): Any? {
         val (instance, methodName) = routes[prompting] ?: return  "404 Not found"
-
         val function = instance::class.declaredFunctions.first{ it.name == methodName}
         return function.call(instance, *args)
     }
