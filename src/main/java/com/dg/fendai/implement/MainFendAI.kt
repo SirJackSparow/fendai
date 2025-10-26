@@ -29,20 +29,11 @@ object MainFendAI {
     }
 
     suspend fun sendMessage(message: String) = coroutineScope {
-
-        val result = StringBuilder()
-
-        try {
-
-        } catch (e: CancellationException) {
-
-        } catch (e: Exception) {
-
-        }
+        fendAIManager.sendMessage(message)
     }
 
     fun addUserMessage(message: String) {
-
+        fendAIManager.addUserMessage(message)
     }
 
     fun prompt(prompting: String, vararg args: Any?) : Any?{
