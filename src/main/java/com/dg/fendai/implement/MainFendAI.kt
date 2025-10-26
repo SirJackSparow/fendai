@@ -13,7 +13,6 @@ object MainFendAI {
     private val router: DefineInterface = DefineImpl()
     private val fendAIManager: FendAIManager = FendAIManagerImplementation()
 
-
     fun init(context: Context) {
         if (initialized) return
         appContext = context.applicationContext
@@ -34,7 +33,6 @@ object MainFendAI {
         val result = StringBuilder()
 
         try {
-
 
         } catch (e: CancellationException) {
 
