@@ -64,7 +64,7 @@ fun incrementVersion(version: String): String {
 publishing {
     publications {
         create<MavenPublication>("release") {
-            groupId = "com.fendai"
+            groupId = "com.dg.fendai"  // it must same with the name space of it !
             artifactId = "fendai"
             version = versionName
             afterEvaluate { from(components["release"]) }

@@ -79,7 +79,6 @@ class FendAIManagerImplementation : FendAIManager {
         modelPath: String,
         params: LlamaEngine.InferenceParams,
         onError: (Exception) -> Unit,
-        systemPrompt: String,
         onSuccess: (Boolean) -> Unit
     ) {
         try {
@@ -90,7 +89,6 @@ class FendAIManagerImplementation : FendAIManager {
                     }
 
                     instance.load(modelPath, params)
-                    instance.addSystemPrompt(prompt = systemPrompt)
 
                     withContext(Dispatchers.Main) {
                         isInstanceLoaded = true
@@ -102,4 +100,8 @@ class FendAIManagerImplementation : FendAIManager {
             throw Exception(e)
         }
     }
+
+//    override fun prompt(prompt: String) {
+//        instance.addSystemPrompt(prompt)
+//    }
 }

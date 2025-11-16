@@ -8,8 +8,6 @@ interface FendAIManager {
     fun loadModel(modelPath: String,
              params: LlamaEngine.InferenceParams = LlamaEngine.InferenceParams(),
              onError: (Exception) -> Unit,
-             systemPrompt: String,
              onSuccess: (Boolean) -> Unit,
              )
-
 }

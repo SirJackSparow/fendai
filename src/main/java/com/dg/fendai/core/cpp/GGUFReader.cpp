@@ -2,8 +2,8 @@
 // Created by Bima Maulana Effendy on 01/10/25.
 //
 #include "gguf.h"
-#include "<jni.h>"
-#include "<string>"
+#include <jni.h>
+#include <string>
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_dg_fendai_core_GGUFReader_getGGUFContextNativeHandle(JNIEnv* env, jobject thiz, jstring modelPath) {
@@ -30,6 +30,7 @@ Java_com_dg_fendai_core_GGUFReader_getContextSize(JNIEnv* env, jobject thiz, jlo
     return contextLength;
 }
 
+extern "C" JNIEXPORT jstring JNICALL
 Java_com_dg_fendai_core_GGUFReader_getChatTemplate(JNIEnv* env, jobject thiz, jlong nativeHandle) {
     gguf_context* ggufContext       = reinterpret_cast<gguf_context*>(nativeHandle);
     int64_t       chatTemplateKeyId = gguf_find_key(ggufContext, "tokenizer.chat_template");

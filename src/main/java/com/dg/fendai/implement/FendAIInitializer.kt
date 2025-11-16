@@ -14,7 +14,7 @@ class FendAIInitializer : Initializer<MainFendAI> {
      * @return The initialized [MainFendAI] singleton instance.
      */
     override fun create(context: Context): MainFendAI {
-        MainFendAI.init(context)
+        MainFendAI.init()
         println("Init FendAI successfully")
         return MainFendAI
     }

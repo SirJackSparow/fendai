@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project("llama_jni")
+project("llama_android")
 
 set(LLAMA_DIR_RELATIVE "../../../../../../../../../llama.cpp")
 
@@ -67,7 +67,7 @@ set(ANDROID_CHAT
 
 
         LLMInference.cpp
-        llama_jni.cpp
+        llama_android.cpp
 )
 
 set(GGUF_READER_SOURCES
@@ -171,21 +171,21 @@ function(build_library_universal target_name)
     )
 endfunction()
 
-build_library_universal("llama_jni")
+build_library_universal("llama_android")
 if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
-    build_library_armv7a("llama_jni_v7a" "-march=armv7-a" "-mfpu=neon-vfpv4" "-mfloat-abi=softfp")
+    build_library_armv7a("llama_android_v7a" "-march=armv7-a" "-mfpu=neon-vfpv4" "-mfloat-abi=softfp")
 endif()
 
 if (${ANDROID_ABI} STREQUAL "arm64-v8a")
-    build_library_arm64("llama_jni_v8" "-march=armv8-a")
+    build_library_arm64("llama_android_v8" "-march=armv8-a")
 
-    build_library_arm64("llama_jni_v8_2_fp16" "-march=armv8.2-a+fp16")
-    build_library_arm64("llama_jni_v8_2_fp16_dotprod" "-march=armv8.2-a+fp16+dotprod")
+    build_library_arm64("llama_android_v8_2_fp16" "-march=armv8.2-a+fp16")
+    build_library_arm64("llama_android_v8_2_fp16_dotprod" "-march=armv8.2-a+fp16+dotprod")
 
-    build_library_arm64("llama_jni_v8_4_fp16_dotprod" "-march=armv8.4-a+fp16+dotprod")
-    build_library_arm64("llama_jni_v8_4_fp16_dotprod_sve" "-march=armv8.4-a+fp16+dotprod+sve")
-    build_library_arm64("llama_jni_v8_4_fp16_dotprod_i8mm" "-march=armv8.4-a+fp16+dotprod+i8mm")
-    build_library_arm64("llama_jni_v8_4_fp16_dotprod_i8mm_sve" "-march=armv8.4-a+fp16+dotprod+i8mm+sve")
+    build_library_arm64("llama_android_v8_4_fp16_dotprod" "-march=armv8.4-a+fp16+dotprod")
+    build_library_arm64("llama_android_v8_4_fp16_dotprod_sve" "-march=armv8.4-a+fp16+dotprod+sve")
+    build_library_arm64("llama_android_v8_4_fp16_dotprod_i8mm" "-march=armv8.4-a+fp16+dotprod+i8mm")
+    build_library_arm64("llama_android_v8_4_fp16_dotprod_i8mm_sve" "-march=armv8.4-a+fp16+dotprod+i8mm+sve")
 endif()
 
 set(TARGET_NAME_GGUF_READER ggufreader)
