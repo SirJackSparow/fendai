@@ -69,7 +69,7 @@ object MainFendAI {
         val params = LlamaEngine.InferenceParams(
             temperature = (router.call(router.pathFunction[0]) as? String)?.toFloatOrNull() ?: 0.0f,
             contextSize = (router.call(router.pathFunction[1]) as? String)?.toLongOrNull() ?: contextSize,
-            chatTemplate = router.call(router.pathFunction[2])?.toString() ?: chatTemplate,
+            chatTemplate =  chatTemplate,
             //topK = router.call(router.pathFunction[3]) as Int? ?: 0,
             //topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f
         )
@@ -77,6 +77,10 @@ object MainFendAI {
         Log.e("t","Temperature: ${params.temperature}")
         Log.e("t","Context Size: ${params.contextSize}")
         Log.e("t","Chat Template: ${params.chatTemplate}")
+
+        for (i in router.pathFunction.indices) {
+            Log.e("t","ke $i : ${router.call(router.pathFunction[i])}")
+        }
 
         fendAIManager.loadModel(
             modelPath = modelPath,
