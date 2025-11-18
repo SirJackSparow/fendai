@@ -31,7 +31,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            path = file("src/main/java/com/dg/fendai/core/cpp/CMakeLists.txt")
+            path = file("src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
 
         }
@@ -55,7 +55,10 @@ android {
     }
 
     publishing {
-        singleVariant("release")
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
@@ -64,7 +67,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "com.dg.fendai"     // group for Maven coordinate
             artifactId = "fendai"     // artifact name
-            version = "1.0.0-beta02"            // version tag
+            version = "1.0.0-beta03"            // version tag
 
             afterEvaluate {
                 from(components["release"]) // publish release AAR
