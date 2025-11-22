@@ -79,7 +79,8 @@ object MainFendAI {
             contextSize = (router.call(router.pathFunction[1])) as Long? ?: contextSize,
             chatTemplate = chatTemplate,
             topK = router.call(router.pathFunction[3]) as Int? ?: 0,
-            topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f
+            topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f,
+            usePenalties = router.call(router.pathFunction[5]) as Boolean? ?: false
         )
 
         Log.e("t", "Temperature: ${params.temperature}")
