@@ -11,9 +11,50 @@
 #define LOGi(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGe(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
+
+//this is must order otherwise will error
+//// 1. PENALTIES (Optional - if you want to prevent repetition)
+//llama_sampler_chain_add(sampler, llama_sampler_init_penalties(...));  // repetition, frequency, presence
+//
+//// 2. DRY (Optional - Dynamic Repetition Penalty)
+//llama_sampler_chain_add(sampler, llama_sampler_init_dry(...));
+//
+//// 3. TOP-K (Optional - keeps only top K tokens)
+//llama_sampler_chain_add(sampler, llama_sampler_init_top_k(topK));
+//
+//// 4. TAIL-FREE (Optional - TFS sampling)
+//llama_sampler_chain_add(sampler, llama_sampler_init_tail_free(...));
+//
+//// 5. TYPICAL (Optional - Typical sampling)
+//llama_sampler_chain_add(sampler, llama_sampler_init_typical(...));
+//
+//// 6. TOP-P / NUCLEUS (Optional - cumulative probability threshold)
+//llama_sampler_chain_add(sampler, llama_sampler_init_top_p(topP, 1));
+//
+//// 7. MIN-P (Optional - minimum probability threshold)
+//llama_sampler_chain_add(sampler, llama_sampler_init_min_p(minP, 1));
+//
+//// 8. XTC (Optional - Exclude Top Choices)
+//llama_sampler_chain_add(sampler, llama_sampler_init_xtc(...));
+//
+//// 9. TEMPERATURE (REQUIRED - adjusts randomness)
+//llama_sampler_chain_add(sampler, llama_sampler_init_temp(temperature));
+//
+//// 10. GRAMMAR (Optional - for structured output like JSON)
+//llama_sampler_chain_add(sampler, llama_sampler_init_grammar(...));
+//
+//// 11. MIROSTAT (Alternative to dist - adaptive sampling)
+//// OR
+//llama_sampler_chain_add(sampler, llama_sampler_init_mirostat(...));
+//
+//// 12. DIST (REQUIRED - ALWAYS LAST - final token selection)
+//llama_sampler_chain_add(sampler, llama_sampler_init_dist(seed));
+
 void
-LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats, long contextSize,
-                        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock) {
+LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats,
+                        long contextSize,
+                        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
+                        int topK, float topP, bool usePenalties) {
     LOGi("loading model with"
          "\n\tmodel_path = %s"
          "\n\tminP = %f"
@@ -23,8 +64,12 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
          "\n\tchatTemplate = %s"
          "\n\tnThreads = %d"
          "\n\tuseMmap = %d"
-         "\n\tuseMlock = %d",
-         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap, useMlock);
+         "\n\tuseMlock = %d"
+         "\n\ttopK = %d"
+         "\n\ttopP = %f"
+         "\n\tusePenalties = %d",
+         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
+         useMlock, topK, topP, usePenalties);
 
     // load dynamic backends
     ggml_backend_load_all();
@@ -54,9 +99,35 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     // create an instance of llama_sampler
     llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
     sampler_params.no_perf = true; // disable performance metrics
-    _sampler = llama_sampler_chain_init(sampler_params);
-    llama_sampler_chain_add(_sampler, llama_sampler_init_temp(temperature));
-    llama_sampler_chain_add(_sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+    _chain = llama_sampler_chain_init(sampler_params);
+
+    struct llama_sampler *penalty_sampler = llama_sampler_init_penalties(
+            /* penalty_last_n    */ 64,
+            /* penalty_repeat    */ 1.2f,
+            /* penalty_freq      */ 0.0f,
+            /* penalty_present   */ 0.0f
+    );
+
+    if (usePenalties) {
+        llama_sampler_chain_add(
+                _chain,
+                penalty_sampler
+        );
+    }
+
+    if (topK > 0) {
+        llama_sampler_chain_add(_chain, llama_sampler_init_top_k(topK));
+    }
+    if (minP >= 0.01f) {
+        llama_sampler_chain_add(_chain, llama_sampler_init_min_p(minP, 1));
+    }
+
+    if (topP <= 0.99) {
+        llama_sampler_chain_add(_chain, llama_sampler_init_top_p(topP, 1));
+    }
+    llama_sampler_chain_add(_chain, llama_sampler_init_temp(temperature));
+    llama_sampler_chain_add(_chain, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+
 
     _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     _messages.clear();
@@ -109,7 +180,8 @@ LLMInference::startCompletion(const char *query) {
                                            _formattedMessages.data(), _formattedMessages.size());
     }
     if (newLen < 0) {
-        throw std::runtime_error("llama_chat_apply_template() in LLMInference::startCompletion() failed");
+        throw std::runtime_error(
+                "llama_chat_apply_template() in LLMInference::startCompletion() failed");
     }
     std::string prompt(_formattedMessages.begin() + _prevLen, _formattedMessages.begin() + newLen);
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
@@ -176,7 +248,7 @@ LLMInference::completionLoop() {
 
     // sample a token and check if it is an EOG (end of generation token)
     // convert the integer token to its corresponding word-piece
-    _currToken = llama_sampler_sample(_sampler, _ctx, -1);
+    _currToken = llama_sampler_sample(_chain, _ctx, -1);
     if (llama_vocab_is_eog(llama_model_get_vocab(_model), _currToken)) {
         addChatMessage(strdup(_response.data()), "assistant");
         _response.clear();
@@ -210,9 +282,11 @@ LLMInference::stopCompletion() {
         addChatMessage(_response.c_str(), "assistant");
     }
     _response.clear();
-    _prevLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), false, nullptr, 0);
+    _prevLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), false,
+                                         nullptr, 0);
     if (_prevLen < 0) {
-        throw std::runtime_error("llama_chat_apply_template() in LLMInference::stopCompletion() failed");
+        throw std::runtime_error(
+                "llama_chat_apply_template() in LLMInference::stopCompletion() failed");
     }
 }
 
@@ -226,5 +300,5 @@ LLMInference::~LLMInference() {
     llama_free(_ctx);
     llama_model_free(_model);
     delete _batch;
-    llama_sampler_free(_sampler);
+    llama_sampler_free(_chain);
 }

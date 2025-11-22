@@ -10,4 +10,5 @@ interface FendAIManager {
              onError: (Exception) -> Unit,
              onSuccess: (Boolean) -> Unit,
              )
+    fun addPrompt(prompt: String)
 }

@@ -166,6 +166,7 @@ class LlamaEngine {
         val useMlock: Boolean = false,
         val topP: Float = 0.9f,
         val topK: Int = 40,
+        val usePenalties: Boolean = false,
         val xtcP: Float = 0.0f,
         val xtcT: Float = 1.0f,
     )
@@ -205,10 +206,9 @@ class LlamaEngine {
                 params.numThreads,
                 params.useMmap,
                 params.useMlock,
-                params.topP,
                 params.topK,
-                params.xtcP,
-                params.xtcT,
+                params.topP,
+                params.usePenalties
             )
     }
 
@@ -357,10 +357,9 @@ class LlamaEngine {
         nThreads: Int,
         useMmap: Boolean,
         useMlock: Boolean,
-        topP: Float,
         topK: Int,
-        xtcP: Float,
-        xtcT: Float,
+        topP: Float,
+        usePenalties: Boolean = false
     ): Long
 
     private external fun addChatMessage(

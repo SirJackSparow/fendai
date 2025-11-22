@@ -23,13 +23,13 @@ object MainFendAI {
 
     var responseMessage = ""
 
-    fun init() {
-        if (initialized) return
-        initialized = true
-        println("Init FendAI")
-    }
-
-    fun uploadModelFile(uri:Uri, context: Context, onSuccess: (String) -> Unit, onError: (Boolean, String) -> Unit)  {
+    fun uploadModelFile(
+        uri: Uri,
+        context: Context,
+        onSuccess: (String) -> Unit,
+        onError: (Boolean, String) -> Unit
+    ) {
+        ensureInitialized()
         var fileName = ""
         var chatTemplates = ""
         var contextSizes = 0L
@@ -47,40 +47,45 @@ object MainFendAI {
                     }
                 }
 
-             //take the contextsize and chat template from the model
-             val ggufReader = GGUFReader()
-             ggufReader.load(File(context.filesDir,fileName).absolutePath)
-                contextSizes = ggufReader.getContextSize() ?:  1024L
-                chatTemplates = ggufReader.getChatTemplate() ?:  "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system You are a helpful AI assistant named John Doe<|im_end|> ' }}{% endif %}{{'<|im_start|>' + message['role'] + ' ' + message['content'] + '<|im_end|>' + ' '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant ' }}{% endif %}"
-                loadModel(modelPath = File(context.filesDir, fileName).absolutePath,
+                //take the contextsize and chat template from the model
+                val ggufReader = GGUFReader()
+                ggufReader.load(File(context.filesDir, fileName).absolutePath)
+                contextSizes = ggufReader.getContextSize() ?: 1024L
+                chatTemplates = ggufReader.getChatTemplate()
+                    ?: "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system You are a helpful AI assistant named John Doe<|im_end|> ' }}{% endif %}{{'<|im_start|>' + message['role'] + ' ' + message['content'] + '<|im_end|>' + ' '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant ' }}{% endif %}"
+                loadModel(
+                    modelPath = File(context.filesDir, fileName).absolutePath,
                     chatTemplate = chatTemplates,
                     contextSize = contextSizes,
                     onSuccess = { i ->
                         onSuccess("success to lod model !")
-                    }, onError = {i ->
-                        onError(true,if (fileName.isEmpty()) "empty model" else "UnKnown" )
-                    } )
+                    }, onError = { i ->
+                        onError(true, if (fileName.isEmpty()) "empty model" else "UnKnown")
+                    })
             }
         }
-        onError(true,if (fileName.isEmpty()) "empty model" else "UnKnown" )
+        onError(true, if (fileName.isEmpty()) "empty model" else "UnKnown")
     }
 
-    private fun loadModel(modelPath: String,chatTemplate: String, contextSize: Long , onSuccess: (Boolean) -> Unit, onError: (Boolean) -> Unit) {
+    private fun loadModel(
+        modelPath: String,
+        chatTemplate: String,
+        contextSize: Long,
+        onSuccess: (Boolean) -> Unit,
+        onError: (Boolean) -> Unit
+    ) {
         val params = LlamaEngine.InferenceParams(
-            temperature = (router.call(router.pathFunction[0]) as? String)?.toFloatOrNull() ?: 0.0f,
-            contextSize = (router.call(router.pathFunction[1]) as? String)?.toLongOrNull() ?: contextSize,
-            chatTemplate =  chatTemplate,
-            //topK = router.call(router.pathFunction[3]) as Int? ?: 0,
-            //topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f
+            temperature = (router.call(router.pathFunction[2])) as Float? ?: 0.9f,
+            contextSize = (router.call(router.pathFunction[1])) as Long? ?: contextSize,
+            chatTemplate = chatTemplate,
+            topK = router.call(router.pathFunction[3]) as Int? ?: 0,
+            topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f
         )
 
-        Log.e("t","Temperature: ${params.temperature}")
-        Log.e("t","Context Size: ${params.contextSize}")
-        Log.e("t","Chat Template: ${params.chatTemplate}")
+        Log.e("t", "Temperature: ${params.temperature}")
+        Log.e("t", "Context Size: ${params.contextSize}")
+        Log.e("t", "Chat Template: ${params.chatTemplate}")
 
-        for (i in router.pathFunction.indices) {
-            Log.e("t","ke $i : ${router.call(router.pathFunction[i])}")
-        }
 
         fendAIManager.loadModel(
             modelPath = modelPath,
@@ -90,17 +95,19 @@ object MainFendAI {
             },
             onSuccess = { success ->
                 onSuccess(success)
+                addPrompt(router.prompt)
             })
     }
 
     fun isInitialized() = initialized
 
     fun registerPrompt(vararg controllers: KClass<*>) {
-        ensureInitialized()
+        initialized = true
         router.promptRegister(*controllers)
     }
 
     suspend fun sendMessage(message: String): String = coroutineScope {
+        ensureInitialized()
         try {
             responseMessage = fendAIManager.sendMessage(message)
             return@coroutineScope responseMessage
@@ -110,11 +117,19 @@ object MainFendAI {
     }
 
     fun addUserMessage(message: String) {
+        ensureInitialized()
         fendAIManager.addUserMessage(message)
     }
 
+    private fun addPrompt(message: String?) {
+        ensureInitialized()
+        if (message != null && message.isNotEmpty()) {
+            fendAIManager.addPrompt(message)
+        }
+    }
+
     private fun ensureInitialized() {
-        if (!initialized) throw IllegalStateException("MyAI not initialized! Call MyAI.init(context) first.")
+        if (!initialized) throw IllegalStateException("Register prompt first")
     }
 
     fun clear() {
