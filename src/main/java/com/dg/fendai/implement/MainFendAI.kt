@@ -122,6 +122,11 @@ object MainFendAI {
         fendAIManager.addUserMessage(message)
     }
 
+    fun addMessageHistory(message: String) {
+        ensureInitialized()
+        fendAIManager.addMessageHistory(message)
+    }
+
     private fun addPrompt(message: String?) {
         ensureInitialized()
         if (message != null && message.isNotEmpty()) {
