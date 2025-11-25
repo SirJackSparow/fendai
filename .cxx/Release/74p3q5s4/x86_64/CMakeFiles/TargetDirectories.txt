@@ -1,0 +1,4 @@
+/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/llama_android.dir
+/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/ggufreader.dir
+/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/edit_cache.dir
+/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/rebuild_cache.dir
