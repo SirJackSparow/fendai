@@ -67,7 +67,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "com.dg.fendai"     // group for Maven coordinate
             artifactId = "fendai"     // artifact name
-            version = "1.0.0-beta04"            // version tag
+            version = "1.0.0-beta05"            // version tag
 
             afterEvaluate {
                 from(components["release"]) // publish release AAR
@@ -101,4 +101,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+// HANYA INI SAJA – SEMUA YANG LAIN DIHAPUS BIAR NO DUPLICATE CLASS!
+    implementation("com.google.mediapipe:tasks-genai:0.10.25")
+// GPU & tokenizer otomatis ikut dari Play Services (terbaru & clean)
+    implementation("com.google.android.gms:play-services-tflite-java:16.4.0")
+    implementation("com.google.android.gms:play-services-tflite-gpu:16.4.0")
 }
