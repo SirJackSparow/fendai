@@ -132,29 +132,22 @@ class LlamaEngine {
     }
 
     /**
-     * Data class to hold the inference parameters for the LLM.
+     * Configuration parameters for the Llama inference engine.
      *
-     * @property minP The minimum probability for a token to be considered.
-     *                Also known as top-P sampling. (Default: 0.1f)
-     * @property temperature The temperature for sampling. Higher values make the output more random.
-     *                       (Default: 0.8f)
-     * @property storeChats Whether to store the chat history in memory. If true, the LLM will
-     *                      remember previous interactions in the current session. (Default: true)
-     * @property contextSize The context size (in tokens) for the LLM. This determines how much
-     *                       of the previous conversation the LLM can "remember". If null, the
-     *                       value from the GGUF model file will be used, or a default value if
-     *                       not present in the model file. (Default: null)
-     * @property chatTemplate The chat template to use for formatting the conversation. This
-     *                        is a Jinja2 template string. If null, the value from the GGUF
-     *                        model file will be used, or a default value if not present in the
-     *                        model file. (Default: null)
-     * @property numThreads The number of threads to use for inference. (Default: 4)
-     * @property useMmap Whether to use memory-mapped file I/O for loading the model.
-     *                   This can improve loading times and reduce memory usage. (Default: true)
-     * @property useMlock Whether to lock the model in memory. This can prevent the model from
-     *                    being swapped out to disk, potentially improving performance. (Default: false)
+     * @property minP Minimum probability threshold for sampling (Min-P sampling). Default is 0.1f.
+     * @property temperature Controls the randomness of predictions. Higher values (e.g., 1.0) make output more random, lower values (e.g., 0.1) make it more deterministic. Default is 0.8f.
+     * @property storeChats If true, the engine maintains a conversational context. Default is true.
+     * @property contextSize Maximum number of tokens in the context window. If null, the model's default is used.
+     * @property chatTemplate The template string used to format chat messages. If null, the model's default is used.
+     * @property numThreads Number of CPU threads to use for computation. Default is 4.
+     * @property useMmap Whether to use memory mapping for the model file. Faster load times but may increase memory usage. Default is true.
+     * @property useMlock Whether to lock the model in memory to prevent swapping. Default is false.
+     * @property topP Nucleus sampling probability threshold. Default is 0.9f.
+     * @property topK Top-K sampling limit. Default is 40.
+     * @property usePenalties Whether to apply repetition penalties. Default is false.
+     * @property xtcP Probability threshold for XTC sampler. Default is 0.0f (disabled).
+     * @property xtcT Threshold for XTC sampler. Default is 1.0f.
      */
-
     data class InferenceParams(
         val minP: Float = 0.1f,
         val temperature: Float = 0.8f,
@@ -166,24 +159,28 @@ class LlamaEngine {
         val useMlock: Boolean = false,
         val topP: Float = 0.9f,
         val topK: Int = 40,
+        val usePenalties: Boolean = false,
         val xtcP: Float = 0.0f,
         val xtcT: Float = 1.0f,
     )
 
+
     /**
-     * Loads the GGUF model from the given path.
-     * This function will read the metadata from the GGUF model file,
-     * such as the context size and chat template, and use them if they are not
-     * explicitly provided in the `params`.
+     * Loads the GGUF model from the given path using the specified parameters.
      *
-     * @param modelPath The path to the GGUF model file.
-     * @param params The inference parameters to use. If not provided, default values will be used.
-     *               If `contextSize` or `chatTemplate` are not provided in `params`,
-     *               the values from the GGUF model file will be used. If those are also
-     *               not available in the model file, then default values from [DefaultInferenceParams]
-     *               will be used.
-     * @return `true` if the model was loaded successfully, `false` otherwise.
-     * @throws FileNotFoundException if the model file is not found at the given path.
+     * This function initializes a [GGUFReader] to extract model metadata (like context size and chat template)
+     * directly from the model file. It prioritizes values in the following order:
+     * 1. Explicit values provided in [params].
+     * 2. Metadata found within the GGUF file.
+     * 3. Default fallback values defined in [DefaultInferenceParams].
+     *
+     * The loading process occurs on the [Dispatchers.IO] context to avoid blocking the main thread.
+     *
+     * @param modelPath The absolute file path to the GGUF model on the device.
+     * @param params Configuration options for the inference engine (e.g., temperature, threads, sampling settings).
+     *               Defaults to a standard set of parameters if not specified.
+     * @return A native pointer (Long) representing the loaded model context, which is stored internally
+     *         in `nativePtr`.
      */
     suspend fun load(
         modelPath: String,
@@ -205,10 +202,9 @@ class LlamaEngine {
                 params.numThreads,
                 params.useMmap,
                 params.useMlock,
-                params.topP,
                 params.topK,
-                params.xtcP,
-                params.xtcT,
+                params.topP,
+                params.usePenalties
             )
     }
 
@@ -233,10 +229,16 @@ class LlamaEngine {
         addChatMessage(nativePtr, prompt, "system")
     }
 
+
     /**
-     * Adds the assistant message for LLM inference
-     * An assistant message is the response given by the LLM
-     * for a previous query in the conversation
+     * Adds an assistant message to the chat history.
+     *
+     * This represents a response generated by the LLM or a pre-filled answer
+     * inserted into the conversation context to guide future generation.
+     * This message will be included in the conversation context for subsequent queries.
+     *
+     * @param message The content of the assistant's message.
+     * @throws IllegalStateException if the model is not loaded.
      */
     fun addAssistantMessage(message: String) {
         verifyHandle()
@@ -357,10 +359,9 @@ class LlamaEngine {
         nThreads: Int,
         useMmap: Boolean,
         useMlock: Boolean,
-        topP: Float,
         topK: Int,
-        xtcP: Float,
-        xtcT: Float,
+        topP: Float,
+        usePenalties: Boolean = false
     ): Long
 
     private external fun addChatMessage(

@@ -11,7 +11,7 @@ class LLMInference {
     // llama.cpp-specific types
     llama_context* _ctx;
     llama_model*   _model;
-    llama_sampler* _sampler;
+    llama_sampler* _chain;
     llama_token    _currToken;
     llama_batch*   _batch;
 
@@ -43,7 +43,7 @@ class LLMInference {
 
 public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
-                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock);
+                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties);
 
     void addChatMessage(const char* message, const char* role);
 

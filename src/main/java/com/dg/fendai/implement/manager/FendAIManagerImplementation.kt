@@ -101,7 +101,11 @@ class FendAIManagerImplementation : FendAIManager {
         }
     }
 
-//    override fun prompt(prompt: String) {
-//        instance.addSystemPrompt(prompt)
-//    }
+    override fun addPrompt(prompt: String) {
+        instance.addSystemPrompt(prompt)
+    }
+
+    override fun addMessageHistory(message: String) {
+        instance.addAssistantMessage(message)
+    }
 }

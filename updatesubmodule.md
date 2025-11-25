@@ -1,0 +1,1 @@
+Run this in your main project folder (root):git submodule update --remote --merge

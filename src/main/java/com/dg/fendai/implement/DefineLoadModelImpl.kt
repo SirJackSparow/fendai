@@ -89,7 +89,7 @@ class DefineLoadModelImpl() : DefineLoadModelInterface {
                     path.add("${annotation.prompt}/${function.name}")
                     val routePath = "${annotation.prompt}/${function.name}"
                     routes[routePath] = instance to function
-                    println("🔹 Route registered: $routePath")
+                    println("*Route registered: $routePath")
                 }
             }
             println("Prompt Successfully Registered")

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.22.1)
 project("llama_android")
 
 set(LLAMA_DIR_RELATIVE "../../../llama.cpp")
-
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 
 set(GGML_DIR ${LLAMA_DIR}/ggml)
@@ -41,7 +40,6 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/src/llama-memory-hybrid.cpp
         ${LLAMA_DIR}/src/llama-mmap.cpp
         ${LLAMA_DIR}/src/llama-hparams.cpp
-        ${LLAMA_DIR}/src/llama-hparams.cpp
         ${LLAMA_DIR}/src/llama-kv-cache-iswa.cpp
         ${LLAMA_DIR}/src/llama-kv-cache.cpp
         ${LLAMA_DIR}/src/llama-batch.cpp
@@ -49,7 +47,6 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/src/llama-adapter.cpp
         ${LLAMA_DIR}/src/llama-chat.cpp
         ${LLAMA_DIR}/src/llama-graph.cpp
-        ${LLAMA_DIR}/src/unicode.h
         ${LLAMA_DIR}/src/unicode.cpp
         ${LLAMA_DIR}/src/unicode-data.cpp
 
@@ -64,7 +61,6 @@ set(ANDROID_CHAT
         ${COMMON_DIR}/log.cpp
         ${COMMON_DIR}/ngram-cache.cpp
         ${COMMON_DIR}/sampling.cpp
-
 
         LLMInference.cpp
         llama_android.cpp
@@ -88,56 +84,43 @@ set(GGUF_READER_SOURCES
         GGUFReader.cpp
 )
 
+# Add all model builder files from src/models/
+file(GLOB MODEL_FILES "${LLAMA_DIR}/src/models/*.cpp")
+if(MODEL_FILES)
+    list(APPEND ANDROID_CHAT ${MODEL_FILES})
+    message(STATUS "Found ${CMAKE_MATCH_COUNT} model files")
+else()
+    message(WARNING "No model files found in ${LLAMA_DIR}/src/models/")
+endif()
+
 add_compile_options("-ffile-prefix-map=${LLAMA_DIR}=.")
 add_link_options("LINKER:--build-id=none")
 
 function(build_library target_name)
-    add_library(
-            ${target_name}
-            SHARED
-            ${ANDROID_CHAT}
-    )
+    add_library(${target_name} SHARED ${ANDROID_CHAT})
 
-    target_include_directories(
-            ${target_name}
+    target_include_directories(${target_name}
             PUBLIC
             ${COMMON_DIR}
             ${GGML_DIR}/include
             ${GGML_DIR}/src
             ${GGML_DIR}/src/ggml-cpu
             ${LLAMA_DIR}/include
+            ${LLAMA_DIR}/src
+            ${LLAMA_DIR}/src/models
             ${VENDOR_DIR}
     )
 
-    target_compile_definitions(
-            ${target_name}
-            PRIVATE
-            GGML_COMMIT=""
-            GGML_VERSION=""
-    )
+    target_compile_definitions(${target_name} PRIVATE GGML_COMMIT="" GGML_VERSION="")
 
-    # -fvisibility=hidden: hide all symbols by default
-    # -fvisibility-inlines-hidden: hide all inline symbols by default
-    target_compile_options(
-            ${target_name}
-            PUBLIC
+    target_compile_options(${target_name} PUBLIC
             -fvisibility=hidden -fvisibility-inlines-hidden
-    )
-
-    target_compile_options(
-            ${target_name}
-            PUBLIC
             -ffunction-sections -fdata-sections
     )
 
-    target_link_libraries(
-            ${target_name}
-            android log
-    )
+    target_link_libraries(${target_name} android log)
 
-    target_link_options(
-            ${target_name}
-            PRIVATE
+    target_link_options(${target_name} PRIVATE
             -Wl,--gc-sections -flto
             -Wl,--exclude-libs,ALL
             "-Wl,-z,max-page-size=16384"
@@ -146,77 +129,49 @@ endfunction()
 
 function(build_library_arm64 target_name cpu_flags)
     build_library(${target_name})
-    target_compile_options(
-            ${target_name}
-            PUBLIC
+    target_compile_options(${target_name} PUBLIC
             -DGGML_USE_CPU -DGGML_USE_CPU_AARCH64 ${cpu_flags} -O3
     )
 endfunction()
 
 function(build_library_armv7a target_name cpu_flags fpu fpu_abi)
     build_library(${target_name})
-    target_compile_options(
-            ${target_name}
-            PUBLIC
+    target_compile_options(${target_name} PUBLIC
             -DGGML_USE_CPU ${cpu_flags} ${fpu} ${fpu_abi} -O3
     )
 endfunction()
 
 function(build_library_universal target_name)
     build_library(${target_name})
-    target_compile_options(
-            ${target_name}
-            PUBLIC
-            -DGGML_USE_CPU -O3
-    )
+    target_compile_options(${target_name} PUBLIC -DGGML_USE_CPU -O3)
 endfunction()
 
 build_library_universal("llama_android")
+
 if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
     build_library_armv7a("llama_android_v7a" "-march=armv7-a" "-mfpu=neon-vfpv4" "-mfloat-abi=softfp")
 endif()
 
 if (${ANDROID_ABI} STREQUAL "arm64-v8a")
     build_library_arm64("llama_android_v8" "-march=armv8-a")
-
     build_library_arm64("llama_android_v8_2_fp16" "-march=armv8.2-a+fp16")
     build_library_arm64("llama_android_v8_2_fp16_dotprod" "-march=armv8.2-a+fp16+dotprod")
-
     build_library_arm64("llama_android_v8_4_fp16_dotprod" "-march=armv8.4-a+fp16+dotprod")
     build_library_arm64("llama_android_v8_4_fp16_dotprod_sve" "-march=armv8.4-a+fp16+dotprod+sve")
     build_library_arm64("llama_android_v8_4_fp16_dotprod_i8mm" "-march=armv8.4-a+fp16+dotprod+i8mm")
     build_library_arm64("llama_android_v8_4_fp16_dotprod_i8mm_sve" "-march=armv8.4-a+fp16+dotprod+i8mm+sve")
 endif()
 
+# GGUF reader
 set(TARGET_NAME_GGUF_READER ggufreader)
 add_library(${TARGET_NAME_GGUF_READER} SHARED ${GGUF_READER_SOURCES})
-target_include_directories(
-        ${TARGET_NAME_GGUF_READER}
-        PUBLIC
-        ${GGML_DIR}/include
-        ${GGML_DIR}/src
-        ${GGML_DIR}/src/ggml-cpu
+target_include_directories(${TARGET_NAME_GGUF_READER} PUBLIC
+        ${GGML_DIR}/include ${GGML_DIR}/src ${GGML_DIR}/src/ggml-cpu
 )
-
-
-target_compile_definitions(
-        ${TARGET_NAME_GGUF_READER}
-        PRIVATE
-        GGML_COMMIT=""
-        GGML_VERSION=""
-)
-target_compile_options(
-        ${TARGET_NAME_GGUF_READER}
-        PUBLIC
+target_compile_definitions(${TARGET_NAME_GGUF_READER} PRIVATE GGML_COMMIT="" GGML_VERSION="")
+target_compile_options(${TARGET_NAME_GGUF_READER} PUBLIC
         -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections
 )
-target_link_options(
-        ${TARGET_NAME_GGUF_READER}
-        PRIVATE
-        -Wl,--gc-sections -flto
-        -Wl,--exclude-libs,ALL
-        "-Wl,-z,max-page-size=16384"
+target_link_options(${TARGET_NAME_GGUF_READER} PRIVATE
+        -Wl,--gc-sections -flto -Wl,--exclude-libs,ALL "-Wl,-z,max-page-size=16384"
 )
-
-
-
