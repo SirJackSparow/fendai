@@ -1,5 +1,7 @@
 package com.dg.fendai.implement.manager
 
+import android.content.Context
+import android.net.Uri
 import com.dg.fendai.core.LlamaEngine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -107,5 +109,17 @@ class FendAIManagerImplementation : FendAIManager {
 
     override fun addMessageHistory(message: String) {
         instance.addAssistantMessage(message)
+    }
+
+    override fun checkGGUFFile(
+        uri: Uri,
+        context: Context,
+    ): Boolean {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val gguMagicNumberBytes = ByteArray(4)
+            inputStream.read(gguMagicNumberBytes)
+            return gguMagicNumberBytes.contentEquals(byteArrayOf(71, 71, 85, 70))
+        }
+        return false
     }
 }

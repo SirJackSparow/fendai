@@ -55,21 +55,21 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
                         long contextSize,
                         const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
                         int topK, float topP, bool usePenalties) {
-    LOGi("loading model with"
-         "\n\tmodel_path = %s"
-         "\n\tminP = %f"
-         "\n\ttemperature = %f"
-         "\n\tstoreChats = %d"
-         "\n\tcontextSize = %li"
-         "\n\tchatTemplate = %s"
-         "\n\tnThreads = %d"
-         "\n\tuseMmap = %d"
-         "\n\tuseMlock = %d"
-         "\n\ttopK = %d"
-         "\n\ttopP = %f"
-         "\n\tusePenalties = %d",
-         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
-         useMlock, topK, topP, usePenalties);
+//    LOGi("loading model with"
+//         "\n\tmodel_path = %s"
+//         "\n\tminP = %f"
+//         "\n\ttemperature = %f"
+//         "\n\tstoreChats = %d"
+//         "\n\tcontextSize = %li"
+//         "\n\tchatTemplate = %s"
+//         "\n\tnThreads = %d"
+//         "\n\tuseMmap = %d"
+//         "\n\tuseMlock = %d"
+//         "\n\ttopK = %d"
+//         "\n\ttopP = %f"
+//         "\n\tusePenalties = %d",
+//         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
+//         useMlock, topK, topP, usePenalties);
 
     // load dynamic backends
     ggml_backend_load_all();

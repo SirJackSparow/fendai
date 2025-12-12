@@ -1,5 +1,7 @@
 package com.dg.fendai.implement.manager
 
+import android.content.Context
+import android.net.Uri
 import com.dg.fendai.core.LlamaEngine
 
 interface FendAIManager {
@@ -12,4 +14,8 @@ interface FendAIManager {
              )
     fun addPrompt(prompt: String)
     fun addMessageHistory(message: String)
+    fun checkGGUFFile(
+        uri: Uri,
+        context: Context,
+    ): Boolean
 }

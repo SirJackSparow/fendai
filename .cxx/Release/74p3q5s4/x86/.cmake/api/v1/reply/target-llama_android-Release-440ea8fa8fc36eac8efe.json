@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/arm64-v8a/libllama_android_v8_4_fp16_dotprod_i8mm.so"
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libllama_android.so"
 		}
 	],
 	"backtrace" : 3,
@@ -12,7 +12,7 @@
 		[
 			"add_library",
 			"build_library",
-			"build_library_arm64",
+			"build_library_universal",
 			"add_link_options",
 			"target_link_options",
 			"target_link_libraries",
@@ -33,13 +33,13 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 161,
+				"line" : 149,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 131,
+				"line" : 145,
 				"parent" : 1
 			},
 			{
@@ -81,7 +81,7 @@
 			{
 				"command" : 7,
 				"file" : 0,
-				"line" : 132,
+				"line" : 146,
 				"parent" : 1
 			},
 			{
@@ -132,14 +132,6 @@
 				},
 				{
 					"backtrace" : 9,
-					"fragment" : "-DGGML_USE_CPU_AARCH64"
-				},
-				{
-					"backtrace" : 9,
-					"fragment" : "-march=armv8.4-a+fp16+dotprod+i8mm"
-				},
-				{
-					"backtrace" : 9,
 					"fragment" : "-O3"
 				}
 			],
@@ -154,7 +146,7 @@
 					"define" : "GGML_VERSION=\"\""
 				},
 				{
-					"define" : "llama_android_v8_4_fp16_dotprod_i8mm_EXPORTS"
+					"define" : "llama_android_EXPORTS"
 				}
 			],
 			"includes" : 
@@ -239,14 +231,6 @@
 				},
 				{
 					"backtrace" : 9,
-					"fragment" : "-DGGML_USE_CPU_AARCH64"
-				},
-				{
-					"backtrace" : 9,
-					"fragment" : "-march=armv8.4-a+fp16+dotprod+i8mm"
-				},
-				{
-					"backtrace" : 9,
 					"fragment" : "-O3"
 				}
 			],
@@ -261,7 +245,7 @@
 					"define" : "GGML_VERSION=\"\""
 				},
 				{
-					"define" : "llama_android_v8_4_fp16_dotprod_i8mm_EXPORTS"
+					"define" : "llama_android_EXPORTS"
 				}
 			],
 			"includes" : 
@@ -439,7 +423,8 @@
 				143,
 				144,
 				145,
-				146
+				146,
+				147
 			],
 			"sysroot" : 
 			{
@@ -447,13 +432,13 @@
 			}
 		}
 	],
-	"id" : "llama_android_v8_4_fp16_dotprod_i8mm::@6890427a1f51a3e7e1df",
+	"id" : "llama_android::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-static-libstdc++ -Wl,-z,max-page-size=16384 -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments  -Wl,--gc-sections",
+				"fragment" : "-static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments  -Wl,--gc-sections",
 				"role" : "flags"
 			},
 			{
@@ -507,8 +492,8 @@
 			"path" : "/Users/fendy24/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
 		}
 	},
-	"name" : "llama_android_v8_4_fp16_dotprod_i8mm",
-	"nameOnDisk" : "libllama_android_v8_4_fp16_dotprod_i8mm.so",
+	"name" : "llama_android",
+	"nameOnDisk" : "libllama_android.so",
 	"paths" : 
 	{
 		"build" : ".",
@@ -663,7 +648,8 @@
 				143,
 				144,
 				145,
-				146
+				146,
+				147
 			]
 		},
 		{
@@ -1465,6 +1451,12 @@
 			"backtrace" : 3,
 			"compileGroupIndex" : 1,
 			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/src/models/refact.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 3,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/src/models/rnd1.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
