@@ -1,17 +1,17 @@
 package com.dg.fendai.implement
 
+
 /**
- * Interface for registering and configuring FendAI model parameters.
+ * Defines a contract for configuring and registering an AI model within the FendAI system.
  *
- * Implement this interface to define custom configuration settings for the AI model's behavior,
- * such as generation randomness, context window size, and chat formatting templates.
- * Default values are provided for all properties.
+ * Implementations of this interface serve as configuration providers, allowing the
+ * application to specify fine-grained inference parameters for the underlying Large Language Model (LLM).
+ * These settings control aspects of text generation such as creativity, context memory limits,
+ * response formatting, and sampling strategies.
+ * and define what types do you want to use (ex: gguf)
  *
- * @see temperature
- * @see contextSize
- * @see chatTemplate
- * @see topK
- * @see topP
+ * This interface is typically used when initializing a model engine or loading a specific model file
+ * to ensure it behaves according to the desired use case (e.g., creative writing vs. strict instruction following).
  */
 interface RegisterFendAI {
     /**
@@ -23,7 +23,8 @@ interface RegisterFendAI {
      *
      * @return A [Float] representing the temperature value, or null/0.0f to use the default.
      */
-    fun temperature() : Float?
+    fun temperature(): Float?
+
     /**
      * Defines the maximum number of tokens the model can process in a single context window.
      *
@@ -33,7 +34,8 @@ interface RegisterFendAI {
      *
      * @return The context size limit as a [Long], or 0L if not specifically configured (which may imply using the model's default).
      */
-    fun contextSize() : Long?
+    fun contextSize(): Long?
+
     /**
      * Returns the chat template string used to format the conversation history for the AI model.
      *
@@ -49,7 +51,8 @@ interface RegisterFendAI {
      *
      * @return A string containing the Jinja2 template, or null to use the model's internal default.
      */
-    fun chatTemplate (): String?
+    fun chatTemplate(): String?
+
     /**
      * Specifies the "Top-K" sampling parameter for token generation.
      *
@@ -61,7 +64,8 @@ interface RegisterFendAI {
      *
      * @return An [Int] representing the number of top tokens to consider, or null/0 to use the default behavior.
      */
-    fun topK (): Int?
+    fun topK(): Int?
+
     /**
      * Specifies the Top-P (Nucleus) sampling probability for the AI model's generation.
      *
@@ -73,7 +77,8 @@ interface RegisterFendAI {
      *
      * @return A [Float] representing the probability threshold (0.0 to 1.0), or null/0.0f to use the default.
      */
-    fun topP (): Float?
+    fun topP(): Float?
+
     /**
      * Determines whether repetition or presence penalties should be applied during text generation.
      *
@@ -88,4 +93,33 @@ interface RegisterFendAI {
      */
     fun usePinalties(): Boolean
 
+    /**
+     * Defines the file format or model architecture type required for this configuration.
+     *
+     * This method specifies the expected extension or internal structure of the model file
+     * (e.g., GGUF, TFLite) that this configuration is intended to support. This allows
+     * the system to validate that the loaded model file matches the implementation's expectations
+     * before attempting to initialize the engine.
+     *
+     * Note: The function signature currently returns [Unit] (void), implying this might be intended
+     * to perform a side-effect (like validation) or is a placeholder for a return type (e.g., an Enum or String)
+     * that identifies the file type.
+     *
+     * for noe only 2 gguf and tflite
+     */
+    fun typeOfFile(): TYPE_OF_FILE
+}
+
+/**
+ * Enumerates the supported file formats and model architectures for the FendAI system.
+ *
+ * This enum is used by [RegisterFendAI.typeOfFile] to specify which underlying engine
+ * or loader should be used for a given model configuration.
+ *
+ * @property GGUF Represents the GGUF (GPT-Generated Unified Format) file format, commonly used with llama.cpp.
+ * @property TFLITE Represents the TensorFlow Lite file format, optimized for on-device machine learning.
+ */
+enum class TYPE_OF_FILE {
+    GGUF,
+    TFLITE
 }

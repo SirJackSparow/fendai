@@ -10,11 +10,19 @@ import kotlin.reflect.KClass
 import com.dg.fendai.core.GGUFReader
 import android.net.Uri
 import android.provider.OpenableColumns
+import com.dg.fendai.core.InferenceTFParams
+import com.dg.fendai.implement.define.DefineLoadModelImpl
+import com.dg.fendai.implement.define.DefineLoadModelInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import com.dg.fendai.implement.Utils.DEFAULT_TEMPLATE_MESSAGE
+import com.dg.fendai.implement.manager.FendAITFLiteManager
+import com.dg.fendai.implement.manager.FendAITFLiteManagerImplementation
+import com.dg.fendai.core.ChatMessage
+import com.dg.fendai.core.Role
 
 /**
  * The main entry point and singleton controller for the FendAI library.
@@ -75,7 +83,7 @@ object MainFendAI {
         onError: (Boolean, String) -> Unit
     ) {
         ensureInitialized()
-        if (!fendAIManager.checkGGUFFile(uri, context)){
+        if (!fendAIManager.checkGGUFFile(uri, context)) {
             onError(true, "File is not GGUF")
             return
         }
@@ -101,7 +109,8 @@ object MainFendAI {
                 ggufReader.load(File(context.filesDir, fileName).absolutePath)
                 contextSizes = ggufReader.getContextSize() ?: 1024L
                 chatTemplates = ggufReader.getChatTemplate()
-                    ?: "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system You are a helpful AI assistant named John Doe<|im_end|> ' }}{% endif %}{{'<|im_start|>' + message['role'] + ' ' + message['content'] + '<|im_end|>' + ' '}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant ' }}{% endif %}"
+                    ?: DEFAULT_TEMPLATE_MESSAGE
+
                 loadModel(
                     modelPath = File(context.filesDir, fileName).absolutePath,
                     chatTemplate = chatTemplates,
@@ -145,7 +154,7 @@ object MainFendAI {
             usePenalties = router.call(router.pathFunction[5]) as Boolean? ?: false
         )
 
-        router.pathFunction.forEachIndexed { i , v->
+        router.pathFunction.forEachIndexed { i, v ->
             Log.d(v.uppercase(), ": ${router.pathFunction[i].lowercase()}")
         }
 
@@ -282,5 +291,28 @@ object MainFendAI {
     fun clear() {
         router.clear()
         initialized = false
+    }
+
+    /**
+     * TFLite manager
+     */
+
+    fun uploadFileTFLite(modelPath: String, context: Context, params: InferenceTFParams) {
+        val fendAITFLiteManager: FendAITFLiteManager = FendAITFLiteManagerImplementation(context)
+        fendAITFLiteManager.uploadFileTFLite(
+            router.prompt ?: "",
+            model = modelPath,
+            params = params
+        )
+    }
+
+    fun addUserMessageTfLite(context: Context, message: String, onResponse: (String) -> Unit) {
+        val fendAITFLiteManager: FendAITFLiteManager =
+            FendAITFLiteManagerImplementation(context = context)
+        fendAITFLiteManager.sendMessage(
+            message = ChatMessage(role = Role.USER, message),
+            onComplete = onResponse
+        )
+
     }
 }

@@ -1,5 +1,6 @@
-package com.dg.fendai.implement
+package com.dg.fendai.implement.define
 
+import com.dg.fendai.implement.Prompt
 import kotlin.collections.forEach
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -9,7 +10,7 @@ import kotlin.reflect.full.findAnnotation
 
 /**
  * An implementation of the [DefineLoadModelInterface] that provides a routing mechanism
- * for dynamically loading and calling functions from classes annotated with [Prompt].
+ * for dynamically loading and calling functions from classes annotated with [com.dg.fendai.implement.Prompt].
  *
  * This class uses reflection to discover functions within annotated classes and registers them
  * as callable routes. A route is constructed by combining the prompt value from the `@Prompt`
@@ -34,7 +35,7 @@ import kotlin.reflect.full.findAnnotation
  * ```
  *
  * @see DefineLoadModelInterface
- * @see Prompt
+ * @see com.dg.fendai.implement.Prompt
  */
 class DefineLoadModelImpl() : DefineLoadModelInterface {
 
