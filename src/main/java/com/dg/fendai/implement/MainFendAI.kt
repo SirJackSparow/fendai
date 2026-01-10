@@ -293,6 +293,10 @@ object MainFendAI {
         initialized = false
     }
 
+    fun changePrompt(prompt: String) {
+        addPrompt(prompt)
+    }
+
     /**
      * TFLite manager
      */
