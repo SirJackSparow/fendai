@@ -122,7 +122,6 @@ object MainFendAI {
                     })
             }
         }
-        onError(true, if (fileName.isEmpty()) "empty model" else "UnKnown")
     }
 
     /**
