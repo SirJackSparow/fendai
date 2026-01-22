@@ -146,12 +146,14 @@ object MainFendAI {
         onError: (Boolean) -> Unit
     ) {
         val params = LlamaEngine.InferenceParams(
+
+            //router.call(router.pathFunction[5] this is for type_of_file
             temperature = (router.call(router.pathFunction[2])) as Float? ?: 0.9f,
             contextSize = (router.call(router.pathFunction[1])) as Long? ?: contextSize,
-            chatTemplate = chatTemplate,
+            chatTemplate = router.call(router.pathFunction[0]) as String? ?: chatTemplate,
             topK = router.call(router.pathFunction[3]) as Int? ?: 0,
             topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f,
-            usePenalties = router.call(router.pathFunction[5]) as Boolean? ?: false
+            usePenalties = router.call(router.pathFunction[6]) as Boolean? ?: false
         )
 
         router.pathFunction.forEachIndexed { i, v ->

@@ -112,7 +112,9 @@ export TOKEN_GITHUB=your-personal-access-token
 gpr.user=your-github-username
 gpr.key=your-personal-access-token
 
+before you need to push tag first
 ./gradlew :fendai:publish
+
 
 repositories {
     maven {
