@@ -307,3 +307,5 @@
 134059	142117	1769057564883640025	CMakeFiles/ggufreader.dir/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/gguf.cpp.o	5b2d75221363fe3f
 129347	142591	1769057565360995584	CMakeFiles/ggufreader.dir/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/ops.cpp.o	79b2c46795772644
 142591	142820	1769057565588641821	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libggufreader.so	a844394dfcdefdae
+0	1266	0	clean	2c021e21a7317ee
+0	12	0	clean	2c021e21a7317ee

@@ -318,6 +318,5 @@ object MainFendAI {
             message = ChatMessage(role = Role.USER, message),
             onComplete = onResponse
         )
-
     }
 }

@@ -6,11 +6,11 @@
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring modelPath,
-                                              jfloat minP,
-                                              jfloat temperature, jboolean storeChats,
-                                              jlong contextSize,
-                                              jstring chatTemplate, jint nThreads, jboolean useMmap,
-                                              jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties) {
+        jfloat minP,
+        jfloat temperature, jboolean storeChats,
+        jlong contextSize,
+        jstring chatTemplate, jint nThreads, jboolean useMmap,
+        jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties) {
 
     jboolean isCopy = true;
     const char *modelPathCstr = env->GetStringUTFChars(modelPath, &isCopy);
@@ -19,7 +19,7 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
 
     try {
         llmInference->loadModel(modelPathCstr, minP, temperature, storeChats, contextSize,
-                                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP,usePenalties);
+                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP, usePenalties);
     } catch (std::runtime_error &error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
     }
@@ -31,8 +31,8 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_addChatMessage(JNIEnv *env, jobject thiz, jlong modelPtr,
-                                                   jstring message,
-                                                   jstring role) {
+        jstring message,
+        jstring role) {
 
     jboolean isCopy = true;
     const char *messageCstr = env->GetStringUTFChars(message, &isCopy);
@@ -46,7 +46,7 @@ Java_com_dg_fendai_core_LlamaEngine_addChatMessage(JNIEnv *env, jobject thiz, jl
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_com_dg_fendai_core_LlamaEngine_getResponseGenerationSpeed(JNIEnv *env, jobject thiz,
-                                                               jlong modelPtr) {
+        jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     return llmInference->getResponseGenerationTime();
 }
@@ -65,7 +65,7 @@ Java_com_dg_fendai_core_LlamaEngine_close(JNIEnv *env, jobject thiz, jlong model
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_startCompletion(JNIEnv *env, jobject thiz, jlong modelPtr,
-                                                    jstring prompt) {
+        jstring prompt) {
     jboolean isCopy = true;
     const char *promptCstr = env->GetStringUTFChars(prompt, &isCopy);
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
@@ -91,3 +91,51 @@ Java_com_dg_fendai_core_LlamaEngine_stopCompletion(JNIEnv *env, jobject thiz, jl
     llmInference->stopCompletion();
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_clearChatHistory(JNIEnv *env, jobject thiz, jlong context_pointer) {
+    auto *inference = reinterpret_cast<LLMInference *>(context_pointer);
+    if (inference != nullptr) {
+        inference->clearChatHistory();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_clearMemoryOnly(
+        JNIEnv *env,
+        jobject thiz,
+        jlong context_pointer
+) {
+    auto* inference = reinterpret_cast<LLMInference*>(context_pointer);
+    if (inference != nullptr) {
+        inference->clearMemoryOnly();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_removeLastMessages(
+        JNIEnv *env,
+        jobject thiz,
+        jlong context_pointer,
+        jint count
+) {
+    auto* inference = reinterpret_cast<LLMInference*>(context_pointer);
+    if (inference != nullptr) {
+        inference->removeLastMessages(count);
+    }
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_dg_fendai_core_LlamaEngine_getMessageCount(
+        JNIEnv *env,
+        jobject thiz,
+        jlong context_pointer
+) {
+    auto* inference = reinterpret_cast<LLMInference*>(context_pointer);
+    if (inference != nullptr) {
+        return inference->getMessageCount();
+    }
+    return 0;
+}

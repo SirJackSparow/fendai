@@ -384,4 +384,12 @@ class LlamaEngine {
     private external fun completionLoop(modelPtr: Long): String
 
     private external fun stopCompletion(modelPtr: Long)
+
+    // neue features 30 January
+
+    private external fun clearChatHistory(contextPointer: Long)
+    private external fun clearMemoryOnly(contextPointer: Long)
+    private external fun removeLastMessages(contextPointer: Long, count: Int)
+    private external fun getMessageCount(contextPointer: Long): Int
+
 }
