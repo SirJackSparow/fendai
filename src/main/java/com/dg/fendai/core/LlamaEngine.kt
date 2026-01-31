@@ -118,7 +118,7 @@ class LlamaEngine {
         private fun supportsArm64V8a(): Boolean = Build.SUPPORTED_ABIS[0].equals("arm64-v8a")
     }
 
-    private var nativePtr = 0L
+    private var nativePtr = 0L // or contextPointer
 
     /**
      * Provides default values for inference parameters.
@@ -349,6 +349,37 @@ class LlamaEngine {
         assert(nativePtr != 0L) { "Model is not loaded. Use Model.create to load the model" }
     }
 
+    /**
+     * Clear all chat history and memory.
+     * Use this for "New Chat" functionality.
+     */
+
+    fun clearAllHistory() {
+        if (nativePtr != 0L) {
+            clearChatHistory(nativePtr)
+        }
+    }
+
+    fun clearMemory() {
+        if (nativePtr != 0L) {
+            clearMemoryOnly(nativePtr)
+        }
+    }
+
+    fun undoLastMessages(count: Int = 1) {
+        if (nativePtr != 0L && count > 0) {
+            removeLastMessages(nativePtr, count)
+        }
+    }
+
+    fun getTotalMessages(): Int {
+        return if (nativePtr != 0L) {
+            getMessageCount(nativePtr)
+        } else {
+            0
+        }
+    }
+
     private external fun loadModel(
         modelPath: String,
         minP: Float,
@@ -384,4 +415,12 @@ class LlamaEngine {
     private external fun completionLoop(modelPtr: Long): String
 
     private external fun stopCompletion(modelPtr: Long)
+
+    // neue features 30 January
+
+    private external fun clearChatHistory(contextPointer: Long)
+    private external fun clearMemoryOnly(contextPointer: Long)
+    private external fun removeLastMessages(contextPointer: Long, count: Int)
+    private external fun getMessageCount(contextPointer: Long): Int
+
 }

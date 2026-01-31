@@ -57,5 +57,19 @@ public:
 
     void stopCompletion();
 
+    //new feature 30 January 2026
+
+    // Clear all chat history and memory
+    void clearChatHistory();
+
+    // Clear only the KV cache memory but keep messages
+    void clearMemoryOnly();
+
+    // Remove last N messages from chat
+    void removeLastMessages(int count);
+
+    // Get number of messages in chat
+    int getMessageCount() const;
+
     ~LLMInference();
 };

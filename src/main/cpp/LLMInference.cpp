@@ -302,3 +302,42 @@ LLMInference::~LLMInference() {
     delete _batch;
     llama_sampler_free(_chain);
 }
+
+//new feature 30 January 2026
+
+void LLMInference::clearChatHistory() {
+    if (_ctx != nullptr) {
+        llama_memory_t mem = llama_get_memory(_ctx);
+        llama_memory_clear(mem, true);
+
+        _nCtxUsed = 0;
+        _prevLen = 0;
+        _messages.clear();
+        _response.clear();
+        _cacheResponseTokens.clear();
+        _formattedMessages.clear();
+        _promptTokens.clear();
+        _responseGenerationTime = 0;
+        _responseNumTokens = 0;
+    }
+}
+
+void LLMInference::clearMemoryOnly() {
+    if (_ctx != nullptr) {
+        llama_memory_t mem = llama_get_memory(_ctx);
+        llama_memory_clear(mem, true);
+        _nCtxUsed = 0;
+        _prevLen = 0;
+    }
+}
+
+void LLMInference::removeLastMessages(int count) {
+    if (count > 0 && !_messages.empty()) {
+        int toRemove = std::min(count, (int)_messages.size());
+        _messages.erase(_messages.end() - toRemove, _messages.end());
+    }
+}
+
+int LLMInference::getMessageCount() const {
+    return (int)_messages.size();
+}
