@@ -122,4 +122,20 @@ class FendAIManagerImplementation : FendAIManager {
         }
         return false
     }
+
+    override fun clearHistoryChat() {
+        instance.clearAllHistory()
+    }
+
+    override fun clearMemoryOnly() {
+       instance.clearMemory()
+    }
+
+    override fun removeFromLastChat(count: Int) {
+       instance.undoLastMessages(count)
+    }
+
+    override fun getCountChat() : Int {
+       return instance.getTotalMessages()
+    }
 }

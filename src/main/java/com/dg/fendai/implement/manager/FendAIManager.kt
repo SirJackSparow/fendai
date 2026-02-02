@@ -18,4 +18,12 @@ interface FendAIManager {
         uri: Uri,
         context: Context,
     ): Boolean
+
+    fun clearHistoryChat()
+
+    fun clearMemoryOnly()
+
+    fun removeFromLastChat(count: Int)
+
+    fun getCountChat() : Int
 }

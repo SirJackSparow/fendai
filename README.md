@@ -172,7 +172,7 @@ class ChatActivity : AppCompatActivity() {
 ```
 
 ---
-
+ 
 ## Important Notes
 
 ⚠️ **Safety:**

@@ -294,9 +294,75 @@ object MainFendAI {
         initialized = false
     }
 
+    /**
+     * Dinamically changes the prompt used by the AI model.
+     *
+     */
     fun changePrompt(prompt: String) {
+        ensureInitialized()
         addPrompt(prompt)
     }
+
+    // neue Features 30 January 2026
+
+    /**
+     * Clears the entire chat history maintained by the underlying AI manager.
+     *
+     * This function ensures the system is initialized before delegating the clear operation
+     * to the `fendAIManager`. It is useful for starting a new conversation from a clean state
+     * without needing to reload the model.
+     *
+     * @throws IllegalStateException if the [MainFendAI] has not been initialized via [registerPrompt].
+     */
+    fun clearHistoryChat() {
+        ensureInitialized()
+        fendAIManager.clearHistoryChat()
+    }
+
+    /**
+     * Clears the chat history and context from the underlying AI manager's memory.
+     *
+     * This function delegates to the [FendAIManager] to erase the current conversation context,
+     * effectively resetting the chat session without unloading the model itself. This is useful for
+     * starting a new, independent conversation.
+     *
+     * @throws IllegalStateException if the [MainFendAI] has not been initialized via [registerPrompt].
+     */
+    fun clearMemoryOnly() {
+        ensureInitialized()
+        fendAIManager.clearMemoryOnly()
+    }
+
+    /**
+     * Removes the last two messages (typically a user query and the assistant's response) from the chat history.
+     *
+     * This function is useful for undoing or correcting the last turn of the conversation. It ensures
+     * the system is initialized before delegating the removal operation to the underlying [FendAIManager].
+     *
+     * @throws IllegalStateException If the [MainFendAI] has not been initialized via [registerPrompt].
+     */
+    fun removeFromLastChat(count: Int) {
+        ensureInitialized()
+        fendAIManager.removeFromLastChat(count)
+    }
+
+    /**
+     * Retrieves the total number of messages in the current chat history.
+     *
+     * This function ensures the system is initialized before querying the underlying [FendAIManager]
+     * for the size of the message list.
+     *
+     * @return The integer count of messages currently stored in the chat history.
+     * @throws IllegalStateException if the [MainFendAI] has not been initialized via [registerPrompt].
+     */
+    fun getCountChat() : Int {
+        ensureInitialized()
+        val messageCount = fendAIManager.getCountChat()
+        return messageCount
+    }
+
+
+
 
     /**
      * TFLite manager
