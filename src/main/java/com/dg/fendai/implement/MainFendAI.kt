@@ -64,7 +64,7 @@ object MainFendAI {
      * This function performs the following operations:
      * 1. Resolves the file name from the provided content [uri].
      * 2. Copies the file content from the URI to the application's internal `filesDir` on an IO dispatcher.
-     * 3. Uses [GGUFReader] to parse the saved file and extract the context size and chat template.
+     * 3. Uses [GGUFReader] to parse the saved file and extract the context size and a chat template.
      *    - If context size is missing, defaults to 1024L.
      *    - If the chat template is missing, defaults to a generic ChatML-like template.
      * 4. Calls the internal `loadModel` function to initialize the Llama engine with the extracted parameters.
@@ -333,15 +333,8 @@ object MainFendAI {
         fendAIManager.clearMemoryOnly()
     }
 
-    /**
-     * Removes the last two messages (typically a user query and the assistant's response) from the chat history.
-     *
-     * This function is useful for undoing or correcting the last turn of the conversation. It ensures
-     * the system is initialized before delegating the removal operation to the underlying [FendAIManager].
-     *
-     * @throws IllegalStateException If the [MainFendAI] has not been initialized via [registerPrompt].
-     */
-    fun removeFromLastChat(count: Int) {
+   @FendAIExperimental
+   fun removeFromLastChat(count: Int) {
         ensureInitialized()
         fendAIManager.removeFromLastChat(count)
     }
