@@ -108,6 +108,9 @@ interface RegisterFendAI {
      * for noe only 2 gguf and tflite
      */
     fun typeOfFile(): TYPE_OF_FILE
+
+
+    fun maxResponseTokens() : Int?
 }
 
 /**

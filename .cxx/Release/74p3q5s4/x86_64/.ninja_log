@@ -325,3 +325,6 @@
 80551	91135	1769928315945274289	CMakeFiles/ggufreader.dir/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/gguf.cpp.o	34a9260356eb89bf
 76068	94185	1769928318993163379	CMakeFiles/ggufreader.dir/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/ops.cpp.o	3ddc96c9aafae367
 94185	94480	1769928319263410619	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86_64/libggufreader.so	1605e593830f07ce
+14	554	1770109771222273763	CMakeFiles/llama_android.dir/llama_android.cpp.o	a321f08c3685bebf
+14	712	1770109771379880458	CMakeFiles/llama_android.dir/LLMInference.cpp.o	bb59bc898c3736c7
+712	1346	1770109771785755829	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86_64/libllama_android.so	b5ebf72d1eeb1391

@@ -41,9 +41,19 @@ class LLMInference {
 
     bool _isValidUtf8(const char* response);
 
+    int _maxResponseTokens;
+
+    //neue 12 Feb 2026
+    // Max tokens per response to prevent infinite generation
+    const int MAX_RESPONSE_TOKENS = 512;
+
+    // Context management helper
+    void manageContext();
+    //neue 12 Feb 2026
+
 public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
-                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties);
+                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties,int maxResponseTokens);
 
     void addChatMessage(const char* message, const char* role);
 
@@ -70,6 +80,9 @@ public:
 
     // Get number of messages in chat
     int getMessageCount() const;
+
+    //neue 12 Feb 2026
+    void getLogAllHistory();
 
     ~LLMInference();
 };

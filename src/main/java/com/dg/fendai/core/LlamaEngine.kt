@@ -83,9 +83,9 @@ class LlamaEngine {
                     Log.d(logTag, "Loading default chatandroimedax.so")
                     System.loadLibrary("llama_android")
                 }
-            // If the app IS running on an emulator, it loads a default, non-optimized version
-            // of the native library. This is likely because emulators might not accurately
-            // report or support all specific CPU features, or for simplicity.
+                // If the app IS running on an emulator, it loads a default, non-optimized version
+                // of the native library. This is likely because emulators might not accurately
+                // report or support all specific CPU features, or for simplicity.
             } else {
                 // load the default native library with no ARM
                 // specific instructions
@@ -162,6 +162,7 @@ class LlamaEngine {
         val usePenalties: Boolean = false,
         val xtcP: Float = 0.0f,
         val xtcT: Float = 1.0f,
+        val maxResponseTokens: Int = 512
     )
 
 
@@ -204,7 +205,8 @@ class LlamaEngine {
                 params.useMlock,
                 params.topK,
                 params.topP,
-                params.usePenalties
+                params.usePenalties,
+                params.maxResponseTokens
             )
     }
 
@@ -380,6 +382,12 @@ class LlamaEngine {
         }
     }
 
+    fun logAllMessageHistory() {
+        if (nativePtr != 0L) {
+            getLogAllHistory(nativePtr)
+        }
+    }
+
     private external fun loadModel(
         modelPath: String,
         minP: Float,
@@ -392,7 +400,8 @@ class LlamaEngine {
         useMlock: Boolean,
         topK: Int,
         topP: Float,
-        usePenalties: Boolean = false
+        usePenalties: Boolean = false,
+        maxResponseTokens: Int = 512
     ): Long
 
     private external fun addChatMessage(
@@ -422,5 +431,6 @@ class LlamaEngine {
     private external fun clearMemoryOnly(contextPointer: Long)
     private external fun removeLastMessages(contextPointer: Long, count: Int)
     private external fun getMessageCount(contextPointer: Long): Int
+    private external fun getLogAllHistory(contextSize: Long)
 
 }

@@ -26,4 +26,6 @@ interface FendAIManager {
     fun removeFromLastChat(count: Int)
 
     fun getCountChat() : Int
+
+    fun logAllMessageHistory()
 }
