@@ -147,12 +147,13 @@ object MainFendAI {
         val params = LlamaEngine.InferenceParams(
 
             //router.call(router.pathFunction[5] this is for type_of_file
-            temperature = (router.call(router.pathFunction[2])) as Float? ?: 0.9f,
+            temperature = (router.call(router.pathFunction[3])) as Float? ?: 0.9f,
             contextSize = (router.call(router.pathFunction[1])) as Long? ?: contextSize,
             chatTemplate = router.call(router.pathFunction[0]) as String? ?: chatTemplate,
-            topK = router.call(router.pathFunction[3]) as Int? ?: 0,
-            topP = router.call(router.pathFunction[4]) as Float? ?: 0.0f,
-            usePenalties = router.call(router.pathFunction[6]) as Boolean? ?: false
+            topK = router.call(router.pathFunction[4]) as Int? ?: 0,
+            topP = router.call(router.pathFunction[5]) as Float? ?: 0.0f,
+            usePenalties = router.call(router.pathFunction[7]) as Boolean? ?: false,
+            maxResponseTokens = router.call(router.pathFunction[2]) as Int? ?: 512
         )
 
         router.pathFunction.forEachIndexed { i, v ->
@@ -333,8 +334,8 @@ object MainFendAI {
         fendAIManager.clearMemoryOnly()
     }
 
-   @FendAIExperimental
-   fun removeFromLastChat(count: Int) {
+    @FendAIExperimental
+    fun removeFromLastChat(count: Int) {
         ensureInitialized()
         fendAIManager.removeFromLastChat(count)
     }
@@ -348,13 +349,27 @@ object MainFendAI {
      * @return The integer count of messages currently stored in the chat history.
      * @throws IllegalStateException if the [MainFendAI] has not been initialized via [registerPrompt].
      */
-    fun getCountChat() : Int {
+    fun getCountChat(): Int {
         ensureInitialized()
         val messageCount = fendAIManager.getCountChat()
         return messageCount
     }
 
+    /**
+     * if you want to know all message history.
+     */
+    fun logAllMessageHistory() {
+        ensureInitialized()
+        fendAIManager.logAllMessageHistory()
+    }
 
+    /**
+     * get context used
+     */
+    fun tokensUsed() {
+        ensureInitialized()
+        fendAIManager.tokensUsed()
+    }
 
 
     /**

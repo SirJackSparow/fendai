@@ -54,22 +54,23 @@ void
 LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats,
                         long contextSize,
                         const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
-                        int topK, float topP, bool usePenalties) {
-//    LOGi("loading model with"
-//         "\n\tmodel_path = %s"
-//         "\n\tminP = %f"
-//         "\n\ttemperature = %f"
-//         "\n\tstoreChats = %d"
-//         "\n\tcontextSize = %li"
-//         "\n\tchatTemplate = %s"
-//         "\n\tnThreads = %d"
-//         "\n\tuseMmap = %d"
-//         "\n\tuseMlock = %d"
-//         "\n\ttopK = %d"
-//         "\n\ttopP = %f"
-//         "\n\tusePenalties = %d",
-//         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
-//         useMlock, topK, topP, usePenalties);
+                        int topK, float topP, bool usePenalties, int maxResponseTokens) {
+    LOGi("loading model with"
+         "\n\tmodel_path = %s"
+         "\n\tminP = %f"
+         "\n\ttemperature = %f"
+         "\n\tstoreChats = %d"
+         "\n\tcontextSize = %li"
+         "\n\tchatTemplate = %s"
+         "\n\tnThreads = %d"
+         "\n\tuseMmap = %d"
+         "\n\tuseMlock = %d"
+         "\n\ttopK = %d"
+         "\n\ttopP = %f"
+         "\n\tusePenalties = %d"
+         "\n\tmaxResponseTokens=%d",
+         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
+         useMlock, topK, topP, usePenalties,maxResponseTokens);
 
     // load dynamic backends
     ggml_backend_load_all();
@@ -131,6 +132,7 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
 
     _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     _messages.clear();
+    _maxResponseTokens = maxResponseTokens;
 
     if (chatTemplate == nullptr) {
         _chatTemplate = llama_model_chat_template(_model, nullptr);
@@ -168,6 +170,12 @@ LLMInference::startCompletion(const char *query) {
     }
     _responseGenerationTime = 0;
     _responseNumTokens = 0;
+
+    //neue
+    if (_storeChats) {
+        manageContext();
+    }
+
     addChatMessage(query, "user");
     // apply the chat-template
     int newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
@@ -232,6 +240,16 @@ LLMInference::_isValidUtf8(const char *response) {
 
 std::string
 LLMInference::completionLoop() {
+
+    // Force stop after max tokens
+    if (_responseNumTokens >= _maxResponseTokens) {
+        if (!_response.empty()) {
+            addChatMessage(_response.c_str(), "assistant");
+            _response.clear();
+        }
+        return "[EOG]";
+    }
+
     // check if the length of the inputs to the model
     // have exceeded the context size of the model
     uint32_t contextSize = llama_n_ctx(_ctx);
@@ -255,6 +273,7 @@ LLMInference::completionLoop() {
         return "[EOG]";
     }
     std::string piece = common_token_to_piece(_ctx, _currToken, true);
+
     auto end = ggml_time_us();
     _responseGenerationTime += (end - start);
     _responseNumTokens += 1;
@@ -276,9 +295,10 @@ LLMInference::completionLoop() {
     return "";
 }
 
+
 void
 LLMInference::stopCompletion() {
-    if (_storeChats) {
+    if (_storeChats && !_response.empty()) {
         addChatMessage(_response.c_str(), "assistant");
     }
     _response.clear();
@@ -341,3 +361,40 @@ void LLMInference::removeLastMessages(int count) {
 int LLMInference::getMessageCount() const {
     return (int)_messages.size();
 }
+
+void LLMInference::manageContext() {
+    uint32_t contextSize = llama_n_ctx(_ctx);
+    uint32_t usedTokens = llama_memory_seq_pos_max(llama_get_memory(_ctx), 0) + 1;
+
+    if (usedTokens > (contextSize * 0.75)) {
+        if (_messages.size() > 3) {
+            size_t removeStart = 0;
+            if (_messages.size() > 0 &&
+                    std::string(_messages[0].role) == "system") {
+                removeStart = 1;
+            }
+
+            if (_messages.size() > removeStart + 2) {
+                _messages.erase(
+                        _messages.begin() + removeStart,
+                        _messages.begin() + removeStart + 2
+                );
+            }
+
+            // ✅ JUST USE IT DIRECTLY WITHOUT DECLARING THE TYPE:
+            llama_memory_seq_rm(llama_get_memory(_ctx), -1, 0, -1);
+
+            _prevLen = 0;
+        }
+    }
+}
+
+void LLMInference::getLogAllHistory() {
+    for (size_t i = 0; i < _messages.size(); i++) {
+        __android_log_print(ANDROID_LOG_DEBUG, "LLMInference",
+                "Message %zu - Role: %s, Content: %s",
+                i, _messages[i].role, _messages[i].content);
+    }
+}
+
+

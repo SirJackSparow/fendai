@@ -10,7 +10,7 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
         jfloat temperature, jboolean storeChats,
         jlong contextSize,
         jstring chatTemplate, jint nThreads, jboolean useMmap,
-        jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties) {
+        jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties, jint maxResponseTokens) {
 
     jboolean isCopy = true;
     const char *modelPathCstr = env->GetStringUTFChars(modelPath, &isCopy);
@@ -19,7 +19,7 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
 
     try {
         llmInference->loadModel(modelPathCstr, minP, temperature, storeChats, contextSize,
-                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP, usePenalties);
+                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP, usePenalties,maxResponseTokens);
     } catch (std::runtime_error &error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
     }
@@ -138,4 +138,15 @@ Java_com_dg_fendai_core_LlamaEngine_getMessageCount(
         return inference->getMessageCount();
     }
     return 0;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_getLogAllHistory(
+        JNIEnv *env,
+        jobject thiz,
+        jlong contextPointer
+) {
+    auto *llmInference = reinterpret_cast<LLMInference *>(contextPointer);
+    llmInference->getLogAllHistory();
 }

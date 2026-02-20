@@ -138,4 +138,12 @@ class FendAIManagerImplementation : FendAIManager {
     override fun getCountChat() : Int {
        return instance.getTotalMessages()
     }
+
+    override fun logAllMessageHistory() {
+        instance.logAllMessageHistory()
+    }
+
+    override fun tokensUsed() {
+        instance.getContextLengthUsed()
+    }
 }
