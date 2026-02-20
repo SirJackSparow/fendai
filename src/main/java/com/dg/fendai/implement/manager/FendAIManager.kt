@@ -28,4 +28,6 @@ interface FendAIManager {
     fun getCountChat() : Int
 
     fun logAllMessageHistory()
+
+    fun tokensUsed()
 }

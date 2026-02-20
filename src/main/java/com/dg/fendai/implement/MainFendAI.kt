@@ -334,8 +334,8 @@ object MainFendAI {
         fendAIManager.clearMemoryOnly()
     }
 
-   @FendAIExperimental
-   fun removeFromLastChat(count: Int) {
+    @FendAIExperimental
+    fun removeFromLastChat(count: Int) {
         ensureInitialized()
         fendAIManager.removeFromLastChat(count)
     }
@@ -349,7 +349,7 @@ object MainFendAI {
      * @return The integer count of messages currently stored in the chat history.
      * @throws IllegalStateException if the [MainFendAI] has not been initialized via [registerPrompt].
      */
-    fun getCountChat() : Int {
+    fun getCountChat(): Int {
         ensureInitialized()
         val messageCount = fendAIManager.getCountChat()
         return messageCount
@@ -361,6 +361,14 @@ object MainFendAI {
     fun logAllMessageHistory() {
         ensureInitialized()
         fendAIManager.logAllMessageHistory()
+    }
+
+    /**
+     * get context used
+     */
+    fun tokensUsed() {
+        ensureInitialized()
+        fendAIManager.tokensUsed()
     }
 
 
