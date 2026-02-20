@@ -75,7 +75,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "com.dg.fendai"     // group for Maven coordinate
             artifactId = "fendai"     // artifact name
-            version = "1.0.0-beta07.1.3"            // version tag
+            version = "1.0.0-beta07.1.4"            // version tag
 
             afterEvaluate {
                 from(components["release"]) // publish release AAR

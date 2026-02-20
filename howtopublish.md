@@ -115,7 +115,7 @@ gpr.key=your-personal-access-token
 before you need to push tag first
 ./gradlew :fendai:publish
 
-//git tag -a git tag -a 1.0.0-beta07.1.3 -m "Release 1.0.0-beta07.1.3" (new)
+//git tag -a git tag -a 1.0.0-beta07.1.4 -m "Release 1.0.0-beta07.1.4" (new)
 
 
 repositories {
