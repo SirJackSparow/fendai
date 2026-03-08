@@ -623,3 +623,11 @@
 16	770	1770109768078315258	CMakeFiles/llama_android.dir/LLMInference.cpp.o	db093bee11f98ae2
 768	1345	1770109768554458014	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android_v7a.so	ae93ffc4b1611806
 770	1630	1770109768547032101	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android.so	abfbf71d42a952ba
+17	553	1771578817785991800	CMakeFiles/ggufreader.dir/GGUFReader.cpp.o	b63d635a9203bc74
+554	758	1771578817941154749	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libggufreader.so	a844394dfcdefdae
+18	778	1771578818009380885	CMakeFiles/llama_android.dir/llama_android.cpp.o	e23ddd7a48431d22
+17	780	1771578818009427760	CMakeFiles/llama_android_v7a.dir/llama_android.cpp.o	8ee81f76d0620add
+18	970	1771578818201327184	CMakeFiles/llama_android.dir/LLMInference.cpp.o	db093bee11f98ae2
+17	972	1771578818202229522	CMakeFiles/llama_android_v7a.dir/LLMInference.cpp.o	e1b5b4e32a826cc8
+971	1592	1771578818631343393	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android.so	abfbf71d42a952ba
+972	1593	1771578818631352477	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android_v7a.so	ae93ffc4b1611806

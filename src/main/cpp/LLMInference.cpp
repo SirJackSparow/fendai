@@ -52,25 +52,26 @@
 
 void
 LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats,
-                        long contextSize,
-                        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
-                        int topK, float topP, bool usePenalties, int maxResponseTokens) {
-    LOGi("loading model with"
-         "\n\tmodel_path = %s"
-         "\n\tminP = %f"
-         "\n\ttemperature = %f"
-         "\n\tstoreChats = %d"
-         "\n\tcontextSize = %li"
-         "\n\tchatTemplate = %s"
-         "\n\tnThreads = %d"
-         "\n\tuseMmap = %d"
-         "\n\tuseMlock = %d"
-         "\n\ttopK = %d"
-         "\n\ttopP = %f"
-         "\n\tusePenalties = %d"
-         "\n\tmaxResponseTokens=%d",
-         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
-         useMlock, topK, topP, usePenalties,maxResponseTokens);
+        long contextSize,
+        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
+        int topK, float topP, bool usePenalties, int maxResponseTokens) {
+    _stopGeneration.store(false);
+//    LOGi("loading model with"
+//         "\n\tmodel_path = %s"
+//         "\n\tminP = %f"
+//         "\n\ttemperature = %f"
+//         "\n\tstoreChats = %d"
+//         "\n\tcontextSize = %li"
+//         "\n\tchatTemplate = %s"
+//         "\n\tnThreads = %d"
+//         "\n\tuseMmap = %d"
+//         "\n\tuseMlock = %d"
+//         "\n\ttopK = %d"
+//         "\n\ttopP = %f"
+//         "\n\tusePenalties = %d"
+//         "\n\tmaxResponseTokens=%d",
+//            model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
+//            useMlock, topK, topP, usePenalties,maxResponseTokens);
 
     // load dynamic backends
     ggml_backend_load_all();
@@ -149,10 +150,6 @@ LLMInference::addChatMessage(const char *message, const char *role) {
 
 float
 LLMInference::getResponseGenerationTime() const {
-    // This function calculates the average time taken to generate a single token in the response.
-    // _responseNumTokens stores the total number of tokens generated in the current response.
-    // _responseGenerationTime stores the total time taken to generate these tokens, in microseconds.
-    // The division by 1e6 converts microseconds to seconds.
     return (float) _responseNumTokens / (_responseGenerationTime / 1e6);
 }
 
@@ -163,6 +160,8 @@ LLMInference::getContextSizeUsed() const {
 
 void
 LLMInference::startCompletion(const char *query) {
+    _imageMode = false;                        // ← ADD
+
     if (!_storeChats) {
         _prevLen = 0;
         _formattedMessages.clear();
@@ -179,13 +178,13 @@ LLMInference::startCompletion(const char *query) {
     addChatMessage(query, "user");
     // apply the chat-template
     int newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
-                                           _formattedMessages.data(), _formattedMessages.size());
+            _formattedMessages.data(), _formattedMessages.size());
     if (newLen > (int) _formattedMessages.size()) {
         // resize the output buffer `_formattedMessages`
         // and re-apply the chat template
         _formattedMessages.resize(newLen);
         newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
-                                           _formattedMessages.data(), _formattedMessages.size());
+                _formattedMessages.data(), _formattedMessages.size());
     }
     if (newLen < 0) {
         throw std::runtime_error(
@@ -200,6 +199,141 @@ LLMInference::startCompletion(const char *query) {
     _batch->token = _promptTokens.data();
     _batch->n_tokens = _promptTokens.size();
 }
+
+
+// ← ADD: new function — image + text (or image only if query is "")
+void
+LLMInference::startCompletionWithImage(const char *query,
+        const unsigned char *imageBytes,
+        int imageSize) {
+    if (!_mtmdCtx) {
+        LOGe("vision not enabled — call loadMmproj() first");
+        throw std::runtime_error("loadMmproj() was not called");
+    }
+
+    _imageMode = true;
+    _responseGenerationTime = 0;
+    _responseNumTokens = 0;
+
+    if (!_storeChats) {
+        _prevLen = 0;
+        _formattedMessages.clear();
+        _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
+    }
+
+    if (_storeChats) {
+        manageContext();
+    }
+
+    // build user message with image marker
+    std::string imageMarker = mtmd_default_marker();
+    std::string userMessage;
+    if (query != nullptr && strlen(query) > 0) {
+        userMessage = std::string(query) + "\n" + imageMarker;
+    } else {
+        userMessage = imageMarker;
+    }
+
+    addChatMessage(userMessage.c_str(), "user");
+
+    // apply chat template
+    int newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
+            _formattedMessages.data(), _formattedMessages.size());
+    if (newLen > (int) _formattedMessages.size()) {
+        _formattedMessages.resize(newLen);
+        newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
+                _formattedMessages.data(), _formattedMessages.size());
+    }
+    if (newLen < 0) {
+        throw std::runtime_error(
+                "llama_chat_apply_template() in startCompletionWithImage() failed");
+    }
+
+    std::string prompt(_formattedMessages.begin() + _prevLen,
+            _formattedMessages.begin() + newLen);
+
+    // decode image bytes — ctx required as first arg
+    mtmd_bitmap *bitmap = mtmd_helper_bitmap_init_from_buf(
+            _mtmdCtx,
+            imageBytes,
+            (size_t) imageSize
+    );
+    if (!bitmap) {
+        LOGe("failed to decode image bytes");
+        throw std::runtime_error("mtmd_helper_bitmap_init_from_buf() failed");
+    }
+
+    // tokenize: pre-allocate output, use mtmd_input_text struct
+    mtmd_input_chunks *chunks = mtmd_input_chunks_init();
+    mtmd_input_text inputText = { prompt.c_str(), true, true };
+    const mtmd_bitmap *bitmapsArr[] = { bitmap };
+    int32_t tokResult = mtmd_tokenize(_mtmdCtx, chunks, &inputText, bitmapsArr, 1);
+    if (tokResult != 0) {
+        mtmd_input_chunks_free(chunks);
+        mtmd_bitmap_free(bitmap);
+        throw std::runtime_error("mtmd_tokenize() failed code=" + std::to_string(tokResult));
+    }
+
+    // evaluate all chunks into context
+    llama_pos nPast = 0;
+    if (llama_memory_seq_pos_max(llama_get_memory(_ctx), 0) >= 0) {
+        nPast = llama_memory_seq_pos_max(llama_get_memory(_ctx), 0) + 1;
+    }
+
+    llama_pos newNPast = 0;
+    int32_t evalResult = mtmd_helper_eval_chunks(
+            _mtmdCtx,
+            _ctx,
+            chunks,
+            nPast,
+            0,       // seq_id
+            512,     // n_batch
+            true,    // logits_last
+            &newNPast
+    );
+    if (evalResult != 0) {
+        mtmd_input_chunks_free(chunks);
+        mtmd_bitmap_free(bitmap);
+        throw std::runtime_error("mtmd_helper_eval_chunks() failed");
+    }
+
+    // tokens already evaluated — completionLoop will skip decode on first call
+    _promptTokens.clear();
+    _batch = new llama_batch();
+    _batch->n_tokens = 0;
+
+    mtmd_input_chunks_free(chunks);
+    mtmd_bitmap_free(bitmap);
+
+    LOGi("image ready — starting completionLoop()");
+}
+
+
+// ← ADD: load mmproj once after loadModel()
+void
+LLMInference::loadMmproj(const char *mmprojPath) {
+    LOGi("loading mmproj from %s", mmprojPath);
+    mtmd_context_params params = mtmd_context_params_default();
+    params.use_gpu = true;
+    params.n_threads = 4;
+    _mtmdCtx = mtmd_init_from_file(mmprojPath, _model, params);
+    if (!_mtmdCtx) {
+        LOGe("failed to load mmproj from %s", mmprojPath);
+        throw std::runtime_error("mtmd_init_from_file() failed");
+    }
+    LOGi("mmproj loaded — vision enabled");
+}
+
+
+// ← ADD: free mmproj
+void
+LLMInference::freeMmproj() {
+    if (_mtmdCtx) {
+        mtmd_free(_mtmdCtx);
+        _mtmdCtx = nullptr;
+    }
+}
+
 
 // taken from:
 // https://github.com/ggerganov/llama.cpp/blob/master/examples/llama.android/llama/src/main/cpp/llama-android.cpp#L38
@@ -241,6 +375,15 @@ LLMInference::_isValidUtf8(const char *response) {
 std::string
 LLMInference::completionLoop() {
 
+
+    if (_stopGeneration.load()) {
+        if (!_response.empty()) {
+            addChatMessage(_response.c_str(), "assistant");
+            _response.clear();
+        }
+        return "[EOG]";
+    }
+
     // Force stop after max tokens
     if (_responseNumTokens >= _maxResponseTokens) {
         if (!_response.empty()) {
@@ -254,14 +397,28 @@ LLMInference::completionLoop() {
     // have exceeded the context size of the model
     uint32_t contextSize = llama_n_ctx(_ctx);
     _nCtxUsed = llama_memory_seq_pos_max(llama_get_memory(_ctx), 0) + 1;
-    if (_nCtxUsed + _batch->n_tokens > contextSize) {
-        throw std::runtime_error("context size reached");
+
+    // ← ADD: skip decode on first image call (already evaluated by mtmd)
+    if (!_imageMode) {
+        if (_nCtxUsed + _batch->n_tokens > contextSize) {
+            throw std::runtime_error("context size reached");
+        }
+        if (_batch->n_tokens > 0) {
+            if (llama_decode(_ctx, *_batch) < 0) {
+                throw std::runtime_error("llama_decode() failed");
+            }
+        }
     }
+    _imageMode = false;                        // ← ADD: reset after first image call
 
     auto start = ggml_time_us();
-    // run the model
-    if (llama_decode(_ctx, *_batch) < 0) {
-        throw std::runtime_error("llama_decode() failed");
+
+    if (_stopGeneration.load()) {
+        if (!_response.empty()) {
+            addChatMessage(_response.c_str(), "assistant");
+            _response.clear();
+        }
+        return "[EOG]";
     }
 
     // sample a token and check if it is an EOG (end of generation token)
@@ -302,8 +459,9 @@ LLMInference::stopCompletion() {
         addChatMessage(_response.c_str(), "assistant");
     }
     _response.clear();
+    _imageMode = false;                        // ← ADD
     _prevLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), false,
-                                         nullptr, 0);
+            nullptr, 0);
     if (_prevLen < 0) {
         throw std::runtime_error(
                 "llama_chat_apply_template() in LLMInference::stopCompletion() failed");
@@ -317,6 +475,7 @@ LLMInference::~LLMInference() {
         free(const_cast<char *>(message.role));
         free(const_cast<char *>(message.content));
     }
+    if (_mtmdCtx) mtmd_free(_mtmdCtx);        // ← ADD
     llama_free(_ctx);
     llama_model_free(_model);
     delete _batch;
@@ -332,6 +491,7 @@ void LLMInference::clearChatHistory() {
 
         _nCtxUsed = 0;
         _prevLen = 0;
+        _imageMode = false;                    // ← ADD
         _messages.clear();
         _response.clear();
         _cacheResponseTokens.clear();
@@ -348,6 +508,7 @@ void LLMInference::clearMemoryOnly() {
         llama_memory_clear(mem, true);
         _nCtxUsed = 0;
         _prevLen = 0;
+        _imageMode = false;                    // ← ADD
     }
 }
 
@@ -381,7 +542,6 @@ void LLMInference::manageContext() {
                 );
             }
 
-            // ✅ JUST USE IT DIRECTLY WITHOUT DECLARING THE TYPE:
             llama_memory_seq_rm(llama_get_memory(_ctx), -1, 0, -1);
 
             _prevLen = 0;
@@ -396,5 +556,3 @@ void LLMInference::getLogAllHistory() {
                 i, _messages[i].role, _messages[i].content);
     }
 }
-
-

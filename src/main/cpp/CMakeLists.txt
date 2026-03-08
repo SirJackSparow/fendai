@@ -62,6 +62,12 @@ set(ANDROID_CHAT
         ${COMMON_DIR}/ngram-cache.cpp
         ${COMMON_DIR}/sampling.cpp
 
+        ${LLAMA_DIR}/tools/mtmd/mtmd.cpp
+        ${LLAMA_DIR}/tools/mtmd/mtmd-helper.cpp
+        ${LLAMA_DIR}/tools/mtmd/mtmd-audio.cpp
+        ${LLAMA_DIR}/tools/mtmd/clip.cpp
+        ${LLAMA_DIR}/tools/mtmd/deprecation-warning.cpp
+
         LLMInference.cpp
         llama_android.cpp
 )
@@ -109,6 +115,7 @@ function(build_library target_name)
             ${LLAMA_DIR}/src
             ${LLAMA_DIR}/src/models
             ${VENDOR_DIR}
+            ${LLAMA_DIR}/tools/mtmd
     )
 
     target_compile_definitions(${target_name} PRIVATE GGML_COMMIT="" GGML_VERSION="")

@@ -87,7 +87,8 @@ class FendAIManagerImplementation : FendAIManager {
             modelInitJob =
                 CoroutineScope(Dispatchers.IO).launch {
                     if (isInstanceLoaded) {
-                        return@launch
+                        instance.free()
+                        isInstanceLoaded = false
                     }
 
                     instance.load(modelPath, params)

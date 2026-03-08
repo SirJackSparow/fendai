@@ -3,6 +3,8 @@
 //
 #include "LLMInference.h"
 #include <jni.h>
+#include <thread>
+#include <chrono>
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring modelPath,
@@ -27,6 +29,17 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
     env->ReleaseStringUTFChars(modelPath, modelPathCstr);
     env->ReleaseStringUTFChars(chatTemplate, chatTemplateCstr);
     return reinterpret_cast<jlong>(llmInference);
+}
+
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_freeModel(JNIEnv *env, jobject thiz, jlong nativePtr) {
+    if (nativePtr != 0) {
+        auto *llmInference = reinterpret_cast<LLMInference *>(nativePtr);
+        llmInference->_stopGeneration.store(true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        delete llmInference;
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -149,4 +162,48 @@ Java_com_dg_fendai_core_LlamaEngine_getLogAllHistory(
 ) {
     auto *llmInference = reinterpret_cast<LLMInference *>(contextPointer);
     llmInference->getLogAllHistory();
+}
+
+// ← ADD: load mmproj for vision support 4 mart
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_loadMmproj(JNIEnv *env, jobject thiz, jlong modelPtr,
+        jstring mmprojPath) {
+    jboolean isCopy = true;
+    const char *mmprojPathCstr = env->GetStringUTFChars(mmprojPath, &isCopy);
+    auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
+    try {
+        llmInference->loadMmproj(mmprojPathCstr);
+    } catch (std::runtime_error &error) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+    }
+    env->ReleaseStringUTFChars(mmprojPath, mmprojPathCstr);
+}
+
+// ← ADD: start completion with image 4 mart
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_startCompletionWithImage(JNIEnv *env, jobject thiz,
+        jlong modelPtr, jstring prompt, jbyteArray imageBytes) {
+    jboolean isCopy = true;
+    const char *promptCstr = env->GetStringUTFChars(prompt, &isCopy);
+    jsize imageSize = env->GetArrayLength(imageBytes);
+    jbyte *imageBytesPtr = env->GetByteArrayElements(imageBytes, &isCopy);
+    auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
+    try {
+        llmInference->startCompletionWithImage(
+                promptCstr,
+                reinterpret_cast<const unsigned char *>(imageBytesPtr),
+                (int) imageSize
+        );
+    } catch (std::runtime_error &error) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+    }
+    env->ReleaseStringUTFChars(prompt, promptCstr);
+    env->ReleaseByteArrayElements(imageBytes, imageBytesPtr, JNI_ABORT);
+}
+
+// ← ADD: free mmproj 4 mart
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_LlamaEngine_freeMmproj(JNIEnv *env, jobject thiz, jlong modelPtr) {
+    auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
+    llmInference->freeMmproj();
 }

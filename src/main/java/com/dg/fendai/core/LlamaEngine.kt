@@ -3,6 +3,7 @@ package com.dg.fendai.core
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -187,27 +188,42 @@ class LlamaEngine {
         modelPath: String,
         params: InferenceParams = InferenceParams(),
     ) = withContext(Dispatchers.IO) {
-        val ggufReader = GGUFReader()
-        ggufReader.load(modelPath)
-        val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
-        val modelChatTemplate =
-            ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
-        nativePtr =
-            loadModel(
-                modelPath,
-                params.minP,
-                params.temperature,
-                params.storeChats,
-                params.contextSize ?: modelContextSize,
-                params.chatTemplate ?: modelChatTemplate,
-                params.numThreads,
-                params.useMmap,
-                params.useMlock,
-                params.topK,
-                params.topP,
-                params.usePenalties,
-                params.maxResponseTokens
-            )
+
+        try {
+            Log.d("MODEL_SWITCH", "Reading GGUF...")
+            val ggufReader = GGUFReader()
+            ggufReader.load(modelPath)
+            Log.d("MODEL_SWITCH", "GGUF read OK!")
+            val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
+            val modelChatTemplate =
+                ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+
+            Log.d("MODEL_SWITCH", "contextSize: $modelContextSize")
+            Log.d("MODEL_SWITCH", "chatTemplate: $modelChatTemplate")
+            Log.d("MODEL_SWITCH", "Calling loadModel C++...")
+
+            nativePtr =
+                loadModel(
+                    modelPath,
+                    params.minP,
+                    params.temperature,
+                    params.storeChats,
+                    params.contextSize ?: modelContextSize,
+                    params.chatTemplate ?: modelChatTemplate,
+                    params.numThreads,
+                    params.useMmap,
+                    params.useMlock,
+                    params.topK,
+                    params.topP,
+                    params.usePenalties,
+                    params.maxResponseTokens
+                )
+            Log.d("MODEL_SWITCH", "New model ptr: $nativePtr")
+            Log.d("MODEL_SWITCH", "=== LOAD SUCCESS ===")
+        } catch (e : Exception) {
+            Log.e("MODEL_SWITCH", "=== LOAD FAILED: ${e.message} ===")
+        }
+
     }
 
     /**
@@ -388,6 +404,48 @@ class LlamaEngine {
         }
     }
 
+    // ← ADD - 4 mart
+    fun getResponseAsFlowWithImage(message: String, imageBytes: ByteArray): Flow<String> =
+        flow {
+            verifyHandle()
+            startCompletionWithImage(nativePtr, message, imageBytes)  // ← only difference
+
+            try {
+                while (true) {
+                    val piece = completionLoop(nativePtr)
+                        ?: throw RuntimeException("native completionLoop returned null")
+                    if (piece == "[EOG]") break
+                    if (piece.isNotEmpty()) emit(piece)
+                }
+            } finally {
+                try {
+                    stopCompletion(nativePtr)
+                } catch (t: Throwable) {
+                    Log.e("LlamaEngine", "stopCompletion failed", t)
+                }
+            }
+        }
+            .flowOn(Dispatchers.IO)
+            .catch { e -> emit("[ERROR] ${e.message ?: "native failure"}") }
+
+    // ← ADD - 4 mart
+    suspend fun loadMmproj(mmprojPath: String) = withContext(Dispatchers.IO) {
+        verifyHandle()
+        loadMmproj(nativePtr, mmprojPath)  // calls the private external fun above
+    }
+
+    // ← ADD: public wrapper for freeMmproj
+    fun unloadMmproj() {
+        if (nativePtr != 0L) freeMmproj(nativePtr)  // calls the private external fun above
+    }
+
+    fun free() {
+        if (nativePtr != 0L) {
+            freeModel(nativePtr)
+            nativePtr = 0L
+        }
+    }
+
     private external fun loadModel(
         modelPath: String,
         minP: Float,
@@ -433,4 +491,9 @@ class LlamaEngine {
     private external fun getMessageCount(contextPointer: Long): Int
     private external fun getLogAllHistory(contextSize: Long)
 
+    // neue 4 mart
+    private external fun loadMmproj(modelPtr: Long, mmprojPath: String)
+    private external fun startCompletionWithImage(modelPtr: Long, prompt: String, imageBytes: ByteArray)
+    private external fun freeMmproj(modelPtr: Long)
+    private external fun freeModel(nativePtr: Long)
 }

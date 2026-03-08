@@ -4,6 +4,8 @@
 #pragma once
 #include "llama.h"
 #include "common.h"
+#include "mtmd.h"
+#include "mtmd-helper.h"                              // ← ADD
 #include <string>
 #include <vector>
 
@@ -14,6 +16,7 @@ class LLMInference {
     llama_sampler* _chain;
     llama_token    _currToken;
     llama_batch*   _batch;
+    mtmd_context*  _mtmdCtx = nullptr;         // ← ADD
 
     // container to store user/assistant messages in the chat
     std::vector<llama_chat_message> _messages;
@@ -51,9 +54,11 @@ class LLMInference {
     void manageContext();
     //neue 12 Feb 2026
 
+    bool _imageMode = false;                   // ← ADD
+
 public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
-                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties,int maxResponseTokens);
+            const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties,int maxResponseTokens);
 
     void addChatMessage(const char* message, const char* role);
 
@@ -62,6 +67,14 @@ public:
     int getContextSizeUsed() const;
 
     void startCompletion(const char* query);
+
+    void startCompletionWithImage(const char* query,  // ← ADD
+            const unsigned char* imageBytes,
+            int imageSize);
+
+    void loadMmproj(const char* mmprojPath);          // ← ADD
+    void freeMmproj();                                // ← ADD
+    bool isVisionEnabled() const { return _mtmdCtx != nullptr; } // ← ADD
 
     std::string completionLoop();
 
@@ -83,6 +96,8 @@ public:
 
     //neue 12 Feb 2026
     void getLogAllHistory();
+
+    std::atomic<bool> _stopGeneration{false};
 
     ~LLMInference();
 };

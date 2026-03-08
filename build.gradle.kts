@@ -109,6 +109,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.google.mediapipe:tasks-genai:0.10.29")
+    implementation("com.google.mediapipe:tasks-vision-image-generator:latest.release")
     implementation ("com.google.android.gms:play-services-tflite-gpu:16.4.0")
 }
