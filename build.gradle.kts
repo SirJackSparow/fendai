@@ -7,14 +7,9 @@ plugins {
 android {
     namespace = "com.dg.fendai"
     compileSdk = 35
-    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         minSdk = 24
-
-        ndk {
-            abiFilters += listOf("arm64-v8a")
-        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -38,6 +33,7 @@ android {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
+
         }
     }
 
@@ -51,7 +47,7 @@ android {
         }
 
         debug {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,7 +58,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 
     publishing {
         singleVariant("release") {
@@ -72,21 +70,19 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    }
-}
-
 publishing {
     publications {
-        create<MavenPublication>("release") {
+        register<MavenPublication>("release") {
             groupId = "com.dg.fendai"     // group for Maven coordinate
             artifactId = "fendai"     // artifact name
-            version = "1.0.0-beta07.1.4"            // version tag
+            version = "1.0.0-alpha01.0.0"            // version tag
 
             afterEvaluate {
-                from(components["release"]) // publish release AAR
+                // Ensure the component is available before attempting to use it
+                val releaseComponent = components.findByName("release")
+                if (releaseComponent != null) {
+                    from(releaseComponent)
+                }
             }
         }
     }
@@ -105,6 +101,8 @@ publishing {
         }
     }
 }
+
+tasks.register("prepareKotlinBuildScriptModel") {}
 
 
 dependencies {

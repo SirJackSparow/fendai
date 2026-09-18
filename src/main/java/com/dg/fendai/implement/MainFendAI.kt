@@ -98,15 +98,29 @@ object MainFendAI {
 
         if (fileName.isNotEmpty()) {
             CoroutineScope(Dispatchers.IO).launch {
-                context.contentResolver.openInputStream(uri).use { inputStream ->
-                    FileOutputStream(File(context.filesDir, fileName)).use { outputStream ->
-                        inputStream?.copyTo(outputStream)
+                val destFile = File(context.filesDir, fileName)
+                
+                // Only copy if the file doesn't exist or is different in size
+                var shouldCopy = true
+                if (destFile.exists()) {
+                    context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
+                        if (afd.length == destFile.length()) {
+                            shouldCopy = false
+                        }
+                    }
+                }
+
+                if (shouldCopy) {
+                    context.contentResolver.openInputStream(uri).use { inputStream ->
+                        FileOutputStream(destFile).use { outputStream ->
+                            inputStream?.copyTo(outputStream)
+                        }
                     }
                 }
 
                 //take the contextsize and chat template from the model
                 val ggufReader = GGUFReader()
-                ggufReader.load(File(context.filesDir, fileName).absolutePath)
+                ggufReader.load(destFile.absolutePath)
                 contextSizes = ggufReader.getContextSize() ?: 1024L
                 chatTemplates = ggufReader.getChatTemplate()
                     ?: DEFAULT_TEMPLATE_MESSAGE

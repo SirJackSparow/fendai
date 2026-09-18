@@ -408,7 +408,7 @@ class LlamaEngine {
     fun getResponseAsFlowWithImage(message: String, imageBytes: ByteArray): Flow<String> =
         flow {
             verifyHandle()
-            startCompletionWithImage(nativePtr, message, imageBytes)  // ← only difference
+            startCompletionWithImage(nativePtr, message, imageBytes)
 
             try {
                 while (true) {
@@ -427,6 +427,13 @@ class LlamaEngine {
         }
             .flowOn(Dispatchers.IO)
             .catch { e -> emit("[ERROR] ${e.message ?: "native failure"}") }
+
+    /**
+     * Multimodal audio support via mtmd.
+     * Reuses the vision-based completion logic as mtmd-helper handles both media types.
+     */
+    fun getResponseAsFlowWithAudio(message: String, audioBytes: ByteArray): Flow<String> =
+        getResponseAsFlowWithImage(message, audioBytes)
 
     // ← ADD - 4 mart
     suspend fun loadMmproj(mmprojPath: String) = withContext(Dispatchers.IO) {

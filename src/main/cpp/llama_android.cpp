@@ -2,6 +2,7 @@
 // Created by Bima Maulana Effendy on 01/10/25.
 //
 #include "LLMInference.h"
+#include "mtmd-helper.h"
 #include <jni.h>
 #include <thread>
 #include <chrono>
@@ -74,6 +75,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_com_dg_fendai_core_LlamaEngine_close(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     delete llmInference;
+    return 0;
 }
 
 extern "C" JNIEXPORT void JNICALL

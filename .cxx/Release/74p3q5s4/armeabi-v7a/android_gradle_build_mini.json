@@ -1,0 +1,39 @@
+{
+  "buildFiles": [
+    "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/fendy24/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/fendy24/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "llama_android::@6890427a1f51a3e7e1df": {
+      "artifactName": "llama_android",
+      "abi": "armeabi-v7a",
+      "output": "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android.so",
+      "runtimeFiles": []
+    },
+    "ggufreader::@6890427a1f51a3e7e1df": {
+      "artifactName": "ggufreader",
+      "abi": "armeabi-v7a",
+      "output": "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libggufreader.so",
+      "runtimeFiles": []
+    },
+    "llama_android_v7a::@6890427a1f51a3e7e1df": {
+      "artifactName": "llama_android_v7a",
+      "abi": "armeabi-v7a",
+      "output": "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/armeabi-v7a/libllama_android_v7a.so",
+      "runtimeFiles": []
+    }
+  }
+}
