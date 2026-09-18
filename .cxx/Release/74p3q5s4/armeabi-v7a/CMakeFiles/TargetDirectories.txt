@@ -1,5 +1,0 @@
-/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android.dir
-/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android_v7a.dir
-/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/ggufreader.dir
-/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/edit_cache.dir
-/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/rebuild_cache.dir

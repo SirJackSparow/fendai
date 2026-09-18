@@ -4,10 +4,28 @@ project("llama_android")
 set(LLAMA_DIR_RELATIVE "../../../llama.cpp")
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 
-set(GGML_DIR ${LLAMA_DIR}/ggml)
+set(GGML_DIR   ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
 set(VENDOR_DIR ${LLAMA_DIR}/vendor)
 
+# ============================================================
+# Generate version headers
+# ============================================================
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ggml-version.h"
+        "#pragma once
+#define GGML_VERSION \"unknown\"
+#define GGML_COMMIT  \"\"
+")
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/llama-version.h"
+        "#pragma once
+#define LLAMA_VERSION \"unknown\"
+#define LLAMA_COMMIT  \"\"
+")
+
+# ============================================================
+# Sources (common to all ABIs)
+# ============================================================
 set(ANDROID_CHAT
         ${GGML_DIR}/src/ggml-alloc.c
         ${GGML_DIR}/src/ggml-backend.cpp
@@ -15,10 +33,8 @@ set(ANDROID_CHAT
         ${GGML_DIR}/src/ggml-quants.c
         ${GGML_DIR}/src/ggml-backend-reg.cpp
         ${GGML_DIR}/src/ggml-opt.cpp
-        ${GGML_DIR}/src/ggml-cpu/arch/arm/quants.c
         ${GGML_DIR}/src/ggml-cpu/ops.cpp
         ${GGML_DIR}/src/ggml-cpu/vec.cpp
-        ${GGML_DIR}/src/ggml-cpu/quants.c
         ${GGML_DIR}/src/ggml-cpu/traits.cpp
         ${GGML_DIR}/src/ggml-cpu/unary-ops.cpp
         ${GGML_DIR}/src/ggml-cpu/binary-ops.cpp
@@ -30,7 +46,7 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/src/llama.cpp
         ${LLAMA_DIR}/src/llama-vocab.cpp
         ${LLAMA_DIR}/src/llama-grammar.cpp
-        ${LLAMA_DIR}/src/llama-sampling.cpp
+        ${LLAMA_DIR}/src/llama-sampler.cpp
         ${LLAMA_DIR}/src/llama-context.cpp
         ${LLAMA_DIR}/src/llama-model.cpp
         ${LLAMA_DIR}/src/llama-model-loader.cpp
@@ -49,12 +65,16 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/src/llama-graph.cpp
         ${LLAMA_DIR}/src/unicode.cpp
         ${LLAMA_DIR}/src/unicode-data.cpp
-
-        ${VENDOR_DIR}/nlohmann/json_fwd.hpp
-        ${VENDOR_DIR}/nlohmann/json.hpp
+        ${LLAMA_DIR}/src/llama-kv-cache-msa.cpp
+        ${LLAMA_DIR}/src/llama-kv-cache-dsa.cpp
+        ${LLAMA_DIR}/src/llama-kv-cache-dsa-iswa.cpp
+        ${LLAMA_DIR}/src/llama-kv-cache-dsv4.cpp
+        ${LLAMA_DIR}/src/llama-memory-hybrid-iswa.cpp
+        ${LLAMA_DIR}/src/llama-memory-hybrid-idx.cpp
+        ${LLAMA_DIR}/src/llama-cparams.cpp
+        ${LLAMA_DIR}/src/llama-io.cpp
 
         ${COMMON_DIR}/arg.cpp
-        ${COMMON_DIR}/base64.hpp
         ${COMMON_DIR}/common.cpp
         ${COMMON_DIR}/console.cpp
         ${COMMON_DIR}/json-schema-to-grammar.cpp
@@ -67,11 +87,47 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/tools/mtmd/mtmd-audio.cpp
         ${LLAMA_DIR}/tools/mtmd/clip.cpp
         ${LLAMA_DIR}/tools/mtmd/deprecation-warning.cpp
+        ${LLAMA_DIR}/tools/mtmd/mtmd-image.cpp
+
+        ${GGML_DIR}/src/ggml-backend-dl.cpp
+        ${GGML_DIR}/src/ggml-backend-meta.cpp
+        ${GGML_DIR}/src/ggml-cpu/iqp.cpp
+
+        ${LLAMA_DIR}/vendor/hash/hash.cpp
+        ${LLAMA_DIR}/vendor/hash/sha256/sha256.c
 
         LLMInference.cpp
         llama_android.cpp
 )
 
+# Models
+file(GLOB MODEL_FILES "${LLAMA_DIR}/src/models/*.cpp")
+list(APPEND ANDROID_CHAT ${MODEL_FILES})
+
+# mtmd vision models
+file(GLOB MTMD_MODEL_FILES "${LLAMA_DIR}/tools/mtmd/models/*.cpp")
+list(APPEND ANDROID_CHAT ${MTMD_MODEL_FILES})
+
+# ============================================================
+# Architecture-specific sources (MUST be before build_library)
+# ============================================================
+# Always need the generic quantize_row_* implementations
+list(APPEND ANDROID_CHAT
+        ${GGML_DIR}/src/ggml-cpu/quants.c
+        ${GGML_DIR}/src/ggml-cpu/repack.cpp
+)
+
+if (${ANDROID_ABI} STREQUAL "arm64-v8a" OR ${ANDROID_ABI} STREQUAL "armeabi-v7a")
+    list(APPEND ANDROID_CHAT
+            ${GGML_DIR}/src/ggml-cpu/arch/arm/quants.c
+            ${GGML_DIR}/src/ggml-cpu/arch/arm/repack.cpp
+            ${GGML_DIR}/src/ggml-cpu/arch/arm/cpu-feats.cpp
+    )
+endif()
+
+# ============================================================
+# GGUF reader sources
+# ============================================================
 set(GGUF_READER_SOURCES
         ${GGML_DIR}/src/ggml.c
         ${GGML_DIR}/src/ggml-alloc.c
@@ -90,23 +146,15 @@ set(GGUF_READER_SOURCES
         GGUFReader.cpp
 )
 
-# Add all model builder files from src/models/
-file(GLOB MODEL_FILES "${LLAMA_DIR}/src/models/*.cpp")
-if(MODEL_FILES)
-    list(APPEND ANDROID_CHAT ${MODEL_FILES})
-    message(STATUS "Found ${CMAKE_MATCH_COUNT} model files")
-else()
-    message(WARNING "No model files found in ${LLAMA_DIR}/src/models/")
-endif()
-
 add_compile_options("-ffile-prefix-map=${LLAMA_DIR}=.")
 add_link_options("LINKER:--build-id=none")
+add_compile_definitions(GGML_DISABLE_CPU_AFFINITY)
 
 function(build_library target_name)
     add_library(${target_name} SHARED ${ANDROID_CHAT})
 
-    target_include_directories(${target_name}
-            PUBLIC
+    target_include_directories(${target_name} PUBLIC
+            ${CMAKE_CURRENT_BINARY_DIR}
             ${COMMON_DIR}
             ${GGML_DIR}/include
             ${GGML_DIR}/src
@@ -116,20 +164,23 @@ function(build_library target_name)
             ${LLAMA_DIR}/src/models
             ${VENDOR_DIR}
             ${LLAMA_DIR}/tools/mtmd
+            ${LLAMA_DIR}/vendor/hash
     )
-
-    target_compile_definitions(${target_name} PRIVATE GGML_COMMIT="" GGML_VERSION="")
 
     target_compile_options(${target_name} PUBLIC
-            -fvisibility=hidden -fvisibility-inlines-hidden
-            -ffunction-sections -fdata-sections
+            -fvisibility=hidden
+            -fvisibility-inlines-hidden
+            -ffunction-sections
+            -fdata-sections
     )
 
-    target_link_libraries(${target_name} android log)
+    target_link_libraries(${target_name} android log dl)
 
     target_link_options(${target_name} PRIVATE
-            -Wl,--gc-sections -flto
+            -Wl,--gc-sections
+            -flto
             -Wl,--exclude-libs,ALL
+            -Wl,--allow-multiple-definition
             "-Wl,-z,max-page-size=16384"
     )
 endfunction()
@@ -153,6 +204,9 @@ function(build_library_universal target_name)
     target_compile_options(${target_name} PUBLIC -DGGML_USE_CPU -O3)
 endfunction()
 
+# ============================================================
+# Build targets
+# ============================================================
 build_library_universal("llama_android")
 
 if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
@@ -169,16 +223,35 @@ if (${ANDROID_ABI} STREQUAL "arm64-v8a")
     build_library_arm64("llama_android_v8_4_fp16_dotprod_i8mm_sve" "-march=armv8.4-a+fp16+dotprod+i8mm+sve")
 endif()
 
+# ============================================================
 # GGUF reader
+# ============================================================
 set(TARGET_NAME_GGUF_READER ggufreader)
 add_library(${TARGET_NAME_GGUF_READER} SHARED ${GGUF_READER_SOURCES})
+
 target_include_directories(${TARGET_NAME_GGUF_READER} PUBLIC
-        ${GGML_DIR}/include ${GGML_DIR}/src ${GGML_DIR}/src/ggml-cpu
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${GGML_DIR}/include
+        ${GGML_DIR}/src
+        ${GGML_DIR}/src/ggml-cpu
+        ${LLAMA_DIR}/vendor/hash
 )
-target_compile_definitions(${TARGET_NAME_GGUF_READER} PRIVATE GGML_COMMIT="" GGML_VERSION="")
+
 target_compile_options(${TARGET_NAME_GGUF_READER} PUBLIC
-        -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections
+        -fvisibility=hidden
+        -fvisibility-inlines-hidden
+        -ffunction-sections
+        -fdata-sections
+        -DGGML_USE_CPU
+        -O3
 )
+
+target_link_libraries(${TARGET_NAME_GGUF_READER} android log dl)
+
 target_link_options(${TARGET_NAME_GGUF_READER} PRIVATE
-        -Wl,--gc-sections -flto -Wl,--exclude-libs,ALL "-Wl,-z,max-page-size=16384"
+        -Wl,--gc-sections
+        -flto
+        -Wl,--exclude-libs,ALL
+        -Wl,--allow-multiple-definition
+        "-Wl,-z,max-page-size=16384"
 )

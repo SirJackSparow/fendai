@@ -1,0 +1,132 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Release-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "llama_android",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ggufreader::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ggufreader-Release-1f1a3cb0d90ed95a4a7b.json",
+					"name" : "ggufreader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android-Release-25aab3a8f49bd0d80b2b.json",
+					"name" : "llama_android",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8-Release-1af60b8533bfefb81217.json",
+					"name" : "llama_android_v8",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_2_fp16::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_2_fp16-Release-6eb93627dc279fed2ee1.json",
+					"name" : "llama_android_v8_2_fp16",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_2_fp16_dotprod::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_2_fp16_dotprod-Release-d54eaf0d40dc775f75cf.json",
+					"name" : "llama_android_v8_2_fp16_dotprod",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_4_fp16_dotprod::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_4_fp16_dotprod-Release-9e3009b8552faf06a02b.json",
+					"name" : "llama_android_v8_4_fp16_dotprod",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_4_fp16_dotprod_i8mm::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_4_fp16_dotprod_i8mm-Release-f3f4813fce58175d6362.json",
+					"name" : "llama_android_v8_4_fp16_dotprod_i8mm",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_4_fp16_dotprod_i8mm_sve::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_4_fp16_dotprod_i8mm_sve-Release-f2449d27d5a3cce22a0a.json",
+					"name" : "llama_android_v8_4_fp16_dotprod_i8mm_sve",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "llama_android_v8_4_fp16_dotprod_sve::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-llama_android_v8_4_fp16_dotprod_sve-Release-e916249dab0f2d38a16e.json",
+					"name" : "llama_android_v8_4_fp16_dotprod_sve",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/5mg43532/arm64-v8a",
+		"source" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/src/main/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

@@ -78,8 +78,14 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
 
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
-    model_params.use_mmap = useMmap;
-    model_params.use_mlock = useMlock;
+    if (useMlock) {
+        model_params.load_mode = LLAMA_LOAD_MODE_MLOCK;       // or LLAMA_LOAD_MODE_MMAP_MLOCK
+    } else if (useMmap) {
+        model_params.load_mode = LLAMA_LOAD_MODE_MMAP;
+    } else {
+        model_params.load_mode = LLAMA_LOAD_MODE_NONE;
+    }
+
     _model = llama_model_load_from_file(model_path, model_params);
     if (!_model) {
         LOGe("failed to load model from %s", model_path);
@@ -103,7 +109,9 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     sampler_params.no_perf = true; // disable performance metrics
     _chain = llama_sampler_chain_init(sampler_params);
 
+    const int32_t n_vocab = llama_vocab_n_tokens(llama_model_get_vocab(_model));
     struct llama_sampler *penalty_sampler = llama_sampler_init_penalties(
+            n_vocab,
             /* penalty_last_n    */ 64,
             /* penalty_repeat    */ 1.2f,
             /* penalty_freq      */ 0.0f,
@@ -253,11 +261,15 @@ LLMInference::startCompletionWithImage(const char *query,
             _formattedMessages.begin() + newLen);
 
     // decode image bytes — ctx required as first arg
-    mtmd_bitmap *bitmap = mtmd_helper_bitmap_init_from_buf(
+    mtmd_helper_init_opt opt = {};   // zero-init is usually fine
+    mtmd_helper_bitmap_wrapper wrapper = mtmd_helper_bitmap_init_from_buf(
             _mtmdCtx,
             imageBytes,
-            (size_t) imageSize
+            (size_t) imageSize,
+            false,          // placeholder
+            opt
     );
+    mtmd_bitmap *bitmap = wrapper.bitmap;
     if (!bitmap) {
         LOGe("failed to decode image bytes");
         throw std::runtime_error("mtmd_helper_bitmap_init_from_buf() failed");
