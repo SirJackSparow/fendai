@@ -8,6 +8,70 @@ set(GGML_DIR ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
 set(VENDOR_DIR ${LLAMA_DIR}/vendor)
 
+# Try to find Vulkan for GPU support
+find_package(Vulkan QUIET COMPONENTS glslc)
+
+# On Mac building for Android, we need to point to the Vulkan SDK or Homebrew for C++ headers (vulkan.hpp)
+if (APPLE AND NOT Vulkan_FOUND)
+    set(Vulkan_INCLUDE_DIRS "/opt/homebrew/include")
+    set(Vulkan_FOUND TRUE) # Force it if we know where headers are, but we still need the library for Android
+endif()
+
+set(VULKAN_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/vulkan-generated")
+set(VULKAN_GENERATED_HEADER "${VULKAN_GENERATED_DIR}/ggml-vulkan-shaders.hpp")
+set(VULKAN_SHADER_GEN_BIN "${GGML_DIR}/src/ggml-vulkan/vulkan-shaders/build/vulkan-shaders-gen")
+set(VULKAN_SHADER_SRC_DIR "${GGML_DIR}/src/ggml-vulkan/vulkan-shaders")
+set(VULKAN_GENERATED_SOURCES "")
+
+if (Vulkan_FOUND AND Vulkan_GLSLC_EXECUTABLE)
+    if (EXISTS "${VULKAN_SHADER_GEN_BIN}")
+        file(MAKE_DIRECTORY "${VULKAN_GENERATED_DIR}")
+        file(MAKE_DIRECTORY "${VULKAN_GENERATED_DIR}/spv")
+        file(GLOB VULKAN_SHADER_FILES CONFIGURE_DEPENDS "${VULKAN_SHADER_SRC_DIR}/*.comp")
+
+        add_custom_command(
+            OUTPUT "${VULKAN_GENERATED_HEADER}"
+            COMMAND "${VULKAN_SHADER_GEN_BIN}"
+                --output-dir "${VULKAN_GENERATED_DIR}/spv"
+                --target-hpp "${VULKAN_GENERATED_HEADER}"
+            DEPENDS ${VULKAN_SHADER_FILES} "${VULKAN_SHADER_GEN_BIN}"
+            VERBATIM
+        )
+        list(APPEND VULKAN_GENERATED_SOURCES "${VULKAN_GENERATED_HEADER}")
+
+        foreach(shader_file IN LISTS VULKAN_SHADER_FILES)
+            get_filename_component(shader_name "${shader_file}" NAME_WE)
+            set(vulkan_cpp_file "${VULKAN_GENERATED_DIR}/${shader_name}.cpp")
+            add_custom_command(
+                OUTPUT "${vulkan_cpp_file}"
+                COMMAND "${VULKAN_SHADER_GEN_BIN}"
+                    --glslc "${Vulkan_GLSLC_EXECUTABLE}"
+                    --source "${shader_file}"
+                    --output-dir "${VULKAN_GENERATED_DIR}/spv"
+                    --target-hpp "${VULKAN_GENERATED_HEADER}"
+                    --target-cpp "${vulkan_cpp_file}"
+                DEPENDS "${shader_file}" "${VULKAN_GENERATED_HEADER}" "${VULKAN_SHADER_GEN_BIN}"
+                VERBATIM
+            )
+            list(APPEND VULKAN_GENERATED_SOURCES "${vulkan_cpp_file}")
+        endforeach()
+
+        message(STATUS "Vulkan found and shader bundle generated, enabling GPU support")
+        add_definitions(-DGGML_USE_VULKAN)
+        set(VULKAN_SOURCES ${GGML_DIR}/src/ggml-vulkan/ggml-vulkan.cpp ${VULKAN_GENERATED_SOURCES})
+    else()
+        message(WARNING "Vulkan SDK found but vulkan-shaders-gen is missing. Run the shader generator before building GPU support.")
+        set(VULKAN_SOURCES "")
+    endif()
+else()
+    if (NOT Vulkan_FOUND)
+        message(WARNING "Vulkan SDK not found. Install it to enable GPU support.")
+    else()
+        message(WARNING "Vulkan SDK is available but glslc is missing. GPU support will be disabled.")
+    endif()
+    message(STATUS "GPU support will be disabled (CPU only)")
+endif()
+
 set(ANDROID_CHAT
         ${GGML_DIR}/src/ggml-alloc.c
         ${GGML_DIR}/src/ggml-backend.cpp
@@ -28,6 +92,7 @@ set(ANDROID_CHAT
         ${GGML_DIR}/src/ggml-cpu/iqp.cpp
         ${GGML_DIR}/src/ggml.c
         ${GGML_DIR}/src/gguf.cpp
+        ${VULKAN_SOURCES}
 
         ${LLAMA_DIR}/src/llama.cpp
         ${LLAMA_DIR}/src/llama-vocab.cpp
@@ -161,12 +226,17 @@ function(build_library target_name)
             -ffunction-sections -fdata-sections
     )
 
+    if (Vulkan_FOUND)
+        target_include_directories(${target_name} PRIVATE "/opt/homebrew/include" "${VULKAN_GENERATED_DIR}" "${GGML_DIR}/src/ggml-vulkan")
+        target_link_libraries(${target_name} vulkan)
+    endif()
+
     target_link_libraries(${target_name} android log dl atomic)
 
     target_link_options(${target_name} PRIVATE
             -Wl,--gc-sections -flto
             -Wl,--exclude-libs,ALL
-            "-Wl,-z,max-page-size=16384"
+            -Wl,-z,max-page-size=16384
     )
 endfunction()
 function(build_library_arm64 target_name cpu_flags)
@@ -217,5 +287,5 @@ target_compile_options(${TARGET_NAME_GGUF_READER} PUBLIC
         -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections
 )
 target_link_options(${TARGET_NAME_GGUF_READER} PRIVATE
-        -Wl,--gc-sections -flto -Wl,--exclude-libs,ALL "-Wl,-z,max-page-size=16384"
+        -Wl,--gc-sections -flto -Wl,--exclude-libs,ALL -Wl,-z,max-page-size=16384
 )

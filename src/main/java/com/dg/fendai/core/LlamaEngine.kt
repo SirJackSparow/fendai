@@ -119,6 +119,7 @@ class LlamaEngine {
         private fun supportsArm64V8a(): Boolean = Build.SUPPORTED_ABIS[0].equals("arm64-v8a")
     }
 
+    @Volatile
     private var nativePtr = 0L // or contextPointer
 
     /**
@@ -163,7 +164,8 @@ class LlamaEngine {
         val usePenalties: Boolean = false,
         val xtcP: Float = 0.0f,
         val xtcT: Float = 1.0f,
-        val maxResponseTokens: Int = 512
+        val maxResponseTokens: Int = 512,
+        val nGpuLayers: Int = 0 // ← ADD: 0 means CPU only, >0 means offload layers to GPU
     )
 
 
@@ -216,12 +218,16 @@ class LlamaEngine {
                     params.topK,
                     params.topP,
                     params.usePenalties,
-                    params.maxResponseTokens
+                    params.maxResponseTokens,
+                    params.nGpuLayers // ← ADD
                 )
+            if (nativePtr == 0L) throw RuntimeException("nativePtr is 0L after loadModel")
+
             Log.d("MODEL_SWITCH", "New model ptr: $nativePtr")
             Log.d("MODEL_SWITCH", "=== LOAD SUCCESS ===")
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             Log.e("MODEL_SWITCH", "=== LOAD FAILED: ${e.message} ===")
+            throw e
         }
 
     }
@@ -364,7 +370,7 @@ class LlamaEngine {
     }
 
     private fun verifyHandle() {
-        assert(nativePtr != 0L) { "Model is not loaded. Use Model.create to load the model" }
+        check(nativePtr != 0L) { "Model is not loaded. Use LlamaEngine.load to load the model" }
     }
 
     /**
@@ -466,7 +472,8 @@ class LlamaEngine {
         topK: Int,
         topP: Float,
         usePenalties: Boolean = false,
-        maxResponseTokens: Int = 512
+        maxResponseTokens: Int = 512,
+        nGpuLayers: Int = 0 // ← ADD
     ): Long
 
     private external fun addChatMessage(

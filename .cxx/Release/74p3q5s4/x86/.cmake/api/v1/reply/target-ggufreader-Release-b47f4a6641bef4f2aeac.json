@@ -1,0 +1,460 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libggufreader.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"add_link_options",
+			"target_link_options",
+			"add_compile_options",
+			"target_compile_options",
+			"target_compile_definitions",
+			"add_definitions",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 281,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 202,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 289,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 201,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 286,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 285,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 282,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D__BIONIC_NO_PAGE_SIZE_MACRO -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -O3 -DNDEBUG  -fPIC"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-ffile-prefix-map=/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp=."
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fvisibility=hidden"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fvisibility-inlines-hidden"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fdata-sections"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 6,
+					"define" : "GGML_COMMIT=\"\""
+				},
+				{
+					"backtrace" : 7,
+					"define" : "GGML_USE_VULKAN"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "GGML_VERSION=\"\""
+				},
+				{
+					"define" : "ggufreader_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/include"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				5,
+				11,
+				15
+			],
+			"sysroot" : 
+			{
+				"path" : "/Users/fendy24/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
+			}
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D__BIONIC_NO_PAGE_SIZE_MACRO -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -fPIC"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-ffile-prefix-map=/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp=."
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fvisibility=hidden"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fvisibility-inlines-hidden"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "-fdata-sections"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 6,
+					"define" : "GGML_COMMIT=\"\""
+				},
+				{
+					"backtrace" : 7,
+					"define" : "GGML_USE_VULKAN"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "GGML_VERSION=\"\""
+				},
+				{
+					"define" : "ggufreader_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/include"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				2,
+				3,
+				4,
+				6,
+				7,
+				8,
+				9,
+				10,
+				12,
+				13,
+				14,
+				16,
+				17,
+				18,
+				19
+			],
+			"sysroot" : 
+			{
+				"path" : "/Users/fendy24/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
+			}
+		}
+	],
+	"id" : "ggufreader::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments  -Wl,--gc-sections",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-Xlinker",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "--build-id=none",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-Wl,--gc-sections",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-flto",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-Wl,--exclude-libs,ALL",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-Wl,-z,max-page-size=16384",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-latomic -lm",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX",
+		"sysroot" : 
+		{
+			"path" : "/Users/fendy24/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
+		}
+	},
+	"name" : "ggufreader",
+	"nameOnDisk" : "libggufreader.so",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-alloc.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-backend.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-backend-meta.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-threading.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-quants.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-backend-reg.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-backend-dl.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-opt.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/ops.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/vec.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/quants.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/traits.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/unary-ops.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/binary-ops.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/ggml-cpu/iqp.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/llama.cpp/ggml/src/gguf.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "GGUFReader.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

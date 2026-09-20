@@ -16,6 +16,7 @@ import com.dg.fendai.implement.define.DefineLoadModelInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import com.dg.fendai.implement.Utils.DEFAULT_TEMPLATE_MESSAGE
@@ -90,31 +91,38 @@ object MainFendAI {
         var fileName = ""
         var chatTemplates = ""
         var contextSizes = 0L
-        context.contentResolver.query(uri, null, null, null, null).use { cursor ->
-            val nameIndex = cursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            cursor?.moveToFirst()
-            fileName = nameIndex?.let { cursor.getString(it) }.toString()
+        
+        try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1 && cursor.moveToFirst()) {
+                    fileName = cursor.getString(nameIndex).orEmpty()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainFendAI", "Failed to query display name from content resolver", e)
+        }
+
+        if (fileName.isEmpty() || fileName == "null") {
+            fileName = uri.lastPathSegment.orEmpty()
+        }
+
+        // Sanitize file name to extract only the actual base name and avoid any path slashes
+        fileName = fileName.substringAfterLast('/')
+        if (fileName.isEmpty() || fileName == "null") {
+            fileName = "model_${System.currentTimeMillis()}.gguf"
         }
 
         if (fileName.isNotEmpty()) {
             CoroutineScope(Dispatchers.IO).launch {
+                try {
                 val destFile = File(context.filesDir, fileName)
                 
-                // Only copy if the file doesn't exist or is different in size
-                var shouldCopy = true
-                if (destFile.exists()) {
-                    context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
-                        if (afd.length == destFile.length()) {
-                            shouldCopy = false
-                        }
-                    }
-                }
-
-                if (shouldCopy) {
-                    context.contentResolver.openInputStream(uri).use { inputStream ->
-                        FileOutputStream(destFile).use { outputStream ->
-                            inputStream?.copyTo(outputStream)
-                        }
+                val inputStream = context.contentResolver.openInputStream(uri)
+                    ?: error("Cannot open selected model file")
+                inputStream.use { input ->
+                    FileOutputStream(destFile).use { outputStream ->
+                        input.copyTo(outputStream)
                     }
                 }
 
@@ -130,10 +138,16 @@ object MainFendAI {
                     chatTemplate = chatTemplates,
                     contextSize = contextSizes,
                     onSuccess = { i ->
-                        onSuccess("success to lod model !")
-                    }, onError = { i ->
-                        onError(true, if (fileName.isEmpty()) "empty model" else "UnKnown")
+                        onSuccess("success to load model")
+                    }, onError = {
+                        onError(true, "Native model loading failed")
                     })
+                } catch (e: Exception) {
+                    Log.e("MainFendAI", "Model upload/load failed", e)
+                    withContext(Dispatchers.Main) {
+                        onError(true, e.message ?: e.javaClass.simpleName)
+                    }
+                }
             }
         }
     }

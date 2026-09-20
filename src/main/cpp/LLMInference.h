@@ -11,11 +11,11 @@
 
 class LLMInference {
     // llama.cpp-specific types
-    llama_context* _ctx;
-    llama_model*   _model;
-    llama_sampler* _chain;
+    llama_context* _ctx = nullptr;
+    llama_model*   _model = nullptr;
+    llama_sampler* _chain = nullptr;
     llama_token    _currToken;
-    llama_batch*   _batch;
+    llama_batch*   _batch = nullptr;
     mtmd_context*  _mtmdCtx = nullptr;         // ← ADD
 
     // container to store user/assistant messages in the chat
@@ -54,11 +54,12 @@ class LLMInference {
     void manageContext();
     //neue 12 Feb 2026
 
-    bool _imageMode = false;                   // ← ADD
+    bool _imageMode = false;
 
 public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
-            const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties,int maxResponseTokens);
+            const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int topK, float topP, bool usePenalties, int maxResponseTokens,
+            int nGpuLayers); // ← ADD: nGpuLayers
 
     void addChatMessage(const char* message, const char* role);
 

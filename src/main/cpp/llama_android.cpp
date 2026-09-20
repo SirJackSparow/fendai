@@ -13,7 +13,8 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
         jfloat temperature, jboolean storeChats,
         jlong contextSize,
         jstring chatTemplate, jint nThreads, jboolean useMmap,
-        jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties, jint maxResponseTokens) {
+        jboolean useMlock, jint topK, jfloat topP, jboolean usePenalties, jint maxResponseTokens,
+        jint nGpuLayers) {
 
     jboolean isCopy = true;
     const char *modelPathCstr = env->GetStringUTFChars(modelPath, &isCopy);
@@ -22,8 +23,11 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
 
     try {
         llmInference->loadModel(modelPathCstr, minP, temperature, storeChats, contextSize,
-                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP, usePenalties,maxResponseTokens);
+                chatTemplateCstr, nThreads, useMmap, useMlock, topK, topP, usePenalties,maxResponseTokens,
+                nGpuLayers);
     } catch (std::runtime_error &error) {
+        delete llmInference;
+        llmInference = nullptr;
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
     }
 

@@ -83,9 +83,9 @@ class FendAIManagerImplementation : FendAIManager {
         onError: (Exception) -> Unit,
         onSuccess: (Boolean) -> Unit
     ) {
-        try {
-            modelInitJob =
-                CoroutineScope(Dispatchers.IO).launch {
+        modelInitJob =
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
                     if (isInstanceLoaded) {
                         instance.free()
                         isInstanceLoaded = false
@@ -97,11 +97,12 @@ class FendAIManagerImplementation : FendAIManager {
                         isInstanceLoaded = true
                         onSuccess(true)
                     }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        onError(e)
+                    }
                 }
-        } catch (e: Exception) {
-            onError(e)
-            throw Exception(e)
-        }
+            }
     }
 
     override fun addPrompt(prompt: String) {

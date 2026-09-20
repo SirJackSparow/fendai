@@ -4,12 +4,20 @@
 
 #include "LLMInference.h"
 #include <android/log.h>
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 
 #define TAG "[Fendai-Cpp]"
 #define LOGi(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGe(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
+static void llamaAndroidLog(ggml_log_level level, const char * text, void *) {
+    const android_LogPriority priority = level >= GGML_LOG_LEVEL_ERROR
+            ? ANDROID_LOG_ERROR
+            : level == GGML_LOG_LEVEL_WARN ? ANDROID_LOG_WARN : ANDROID_LOG_INFO;
+    __android_log_print(priority, TAG, "%s", text);
+}
 
 
 //this is must order otherwise will error
@@ -54,30 +62,34 @@ void
 LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats,
         long contextSize,
         const char *chatTemplate, int nThreads, bool useMmap, bool useMlock,
-        int topK, float topP, bool usePenalties, int maxResponseTokens) {
+        int topK, float topP, bool usePenalties, int maxResponseTokens,
+        int nGpuLayers) {
     _stopGeneration.store(false);
-//    LOGi("loading model with"
-//         "\n\tmodel_path = %s"
-//         "\n\tminP = %f"
-//         "\n\ttemperature = %f"
-//         "\n\tstoreChats = %d"
-//         "\n\tcontextSize = %li"
-//         "\n\tchatTemplate = %s"
-//         "\n\tnThreads = %d"
-//         "\n\tuseMmap = %d"
-//         "\n\tuseMlock = %d"
-//         "\n\ttopK = %d"
-//         "\n\ttopP = %f"
-//         "\n\tusePenalties = %d"
-//         "\n\tmaxResponseTokens=%d",
-//            model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap,
-//            useMlock, topK, topP, usePenalties,maxResponseTokens);
+    llama_log_set(llamaAndroidLog, nullptr);
 
     // load dynamic backends
     ggml_backend_load_all();
 
+    // Log available backends
+    size_t n_backends = ggml_backend_reg_count();
+    LOGi("Available backends: %zu", n_backends);
+    for (size_t i = 0; i < n_backends; ++i) {
+        ggml_backend_reg_t reg = ggml_backend_reg_get(i);
+        LOGi("  Backend %zu: %s", i, ggml_backend_reg_name(reg));
+    }
+
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
+    model_params.n_gpu_layers = nGpuLayers; // ← ADD: offload to GPU
+
+    // A null device list lets llama.cpp use every available backend. On Android
+    // that can select Vulkan even when n_gpu_layers is zero, so make CPU mode explicit.
+    ggml_backend_dev_t cpuDevice = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_CPU);
+    ggml_backend_dev_t cpuDevices[] = {cpuDevice, nullptr};
+    if (nGpuLayers <= 0 && cpuDevice != nullptr) {
+        model_params.devices = cpuDevices;
+    }
+
     if (useMmap && useMlock) {
         model_params.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
     } else if (useMmap) {
@@ -96,7 +108,7 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     // create an instance of llama_context
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.n_ctx = contextSize;
-    ctx_params.n_batch = contextSize;
+    ctx_params.n_batch = std::min<long>(contextSize, 512);
     ctx_params.n_threads = nThreads;
     ctx_params.no_perf = true; // disable performance metrics
     _ctx = llama_init_from_model(_model, ctx_params);
