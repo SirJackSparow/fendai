@@ -107,14 +107,10 @@ tasks.register("prepareKotlinBuildScriptModel") {}
 
 dependencies {
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     implementation(libs.kotlin.reflect)
     implementation(libs.androidx.startup.runtime) // Or your Kotlin version
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.google.mediapipe:tasks-vision-image-generator:latest.release")
-    implementation ("com.google.android.gms:play-services-tflite-gpu:16.4.0")
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withContext
 class FendAIManagerImplementation : FendAIManager {
 
     private val instance = LlamaEngine()
+    private val modelScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var modelInitJob: Job? = null
     private var isInstanceLoaded = false
 
@@ -83,8 +85,9 @@ class FendAIManagerImplementation : FendAIManager {
         onError: (Exception) -> Unit,
         onSuccess: (Boolean) -> Unit
     ) {
+        modelInitJob?.cancel()
         modelInitJob =
-            CoroutineScope(Dispatchers.IO).launch {
+            modelScope.launch {
                 try {
                     if (isInstanceLoaded) {
                         instance.free()
@@ -97,6 +100,8 @@ class FendAIManagerImplementation : FendAIManager {
                         isInstanceLoaded = true
                         onSuccess(true)
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
                         onError(e)

@@ -15,6 +15,7 @@ import com.dg.fendai.implement.define.DefineLoadModelImpl
 import com.dg.fendai.implement.define.DefineLoadModelInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -43,6 +44,7 @@ import com.dg.fendai.implement.Utils.DEFAULT_TEMPLATE_MESSAGE
 object MainFendAI {
 
     private var initialized = false
+    private val uploadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
      * An internal interface implementation used to manage and route model configuration parameters and prompt registrations.
@@ -114,7 +116,7 @@ object MainFendAI {
         }
 
         if (fileName.isNotEmpty()) {
-            CoroutineScope(Dispatchers.IO).launch {
+            uploadScope.launch {
                 try {
                 val destFile = File(context.filesDir, fileName)
                 
