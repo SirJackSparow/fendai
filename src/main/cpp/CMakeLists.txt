@@ -149,6 +149,8 @@ set(ANDROID_CHAT
         ${LLAMA_DIR}/vendor/hash/xxhash/xxhash.c
 
         LLMInference.cpp
+        ragengine/rag.cpp
+        ragengine/rag_android.cpp
         llama_android.cpp
 )
 
