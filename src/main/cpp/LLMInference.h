@@ -42,6 +42,10 @@ class LLMInference {
     // length of context window consumed during the conversation
     int _nCtxUsed = 0;
 
+    // How much of _promptTokens has already been fed to llama_decode(). A prompt wider than
+    // n_batch is decoded in slices, so this tracks the slice cursor across calls.
+    int _nPromptDecoded = 0;
+
     bool _isValidUtf8(const char* response);
 
     int _maxResponseTokens;

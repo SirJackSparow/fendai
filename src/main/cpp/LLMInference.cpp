@@ -218,6 +218,11 @@ LLMInference::startCompletion(const char *query) {
     _batch = new llama_batch();
     _batch->token = _promptTokens.data();
     _batch->n_tokens = _promptTokens.size();
+
+    // A prompt wider than n_batch cannot be decoded in one llama_decode() call, so decode it in
+    // slices here. Token positions must keep advancing across slices, otherwise attention sees the
+    // later tokens as replacing the earlier ones.
+    _nPromptDecoded = 0;
 }
 
 
@@ -321,6 +326,7 @@ LLMInference::startCompletionWithImage(const char *query,
 
     // tokens already evaluated — completionLoop will skip decode on first call
     _promptTokens.clear();
+    _nPromptDecoded = 0;
     _batch = new llama_batch();
     _batch->n_tokens = 0;
 
@@ -422,10 +428,30 @@ LLMInference::completionLoop() {
 
     // ← ADD: skip decode on first image call (already evaluated by mtmd)
     if (!_imageMode) {
-        if (_nCtxUsed + _batch->n_tokens > contextSize) {
-            throw std::runtime_error("context size reached");
+        // One decode per call, never wider than n_batch: llama_decode() aborts the whole process
+        // on a batch that exceeds it, and a RAG prompt reliably does. While the prompt is still
+        // being drained we feed one slice and return without sampling; once it is fully decoded
+        // the batch holds the single predicted token, as before.
+        // _batch->pos stays null so llama.cpp continues positions from the KV cache itself.
+        const int nBatch = (int) llama_n_batch(_ctx);
+        const int nPrompt = (int) _promptTokens.size();
+        if (_nPromptDecoded < nPrompt) {
+            const int slice = std::min(nBatch, nPrompt - _nPromptDecoded);
+            if (_nCtxUsed + slice > contextSize) {
+                throw std::runtime_error("context size reached");
+            }
+            _batch->token = _promptTokens.data() + _nPromptDecoded;
+            _batch->n_tokens = slice;
+            if (llama_decode(_ctx, *_batch) < 0) {
+                throw std::runtime_error("llama_decode() failed");
+            }
+            _nPromptDecoded += slice;
+            return "";
         }
         if (_batch->n_tokens > 0) {
+            if (_nCtxUsed + _batch->n_tokens > contextSize) {
+                throw std::runtime_error("context size reached");
+            }
             if (llama_decode(_ctx, *_batch) < 0) {
                 throw std::runtime_error("llama_decode() failed");
             }
@@ -463,6 +489,7 @@ LLMInference::completionLoop() {
     // in the KV cache
     _batch->token = &_currToken;
     _batch->n_tokens = 1;
+    _batch->pos = nullptr;
 
     if (_isValidUtf8(_cacheResponseTokens.c_str())) {
         _response += _cacheResponseTokens;

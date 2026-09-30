@@ -2,7 +2,9 @@ package com.dg.fendai.implement.manager
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.dg.fendai.core.LlamaEngine
+import com.dg.fendai.core.RagEngine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,16 @@ class FendAIManagerImplementation : FendAIManager {
     private var isInstanceLoaded = false
 
     /**
+     * Native retriever plus its configuration. Held inside [knowledgeLock] because the native
+     * index has no internal synchronization and [sendMessage] reads it from the caller's thread.
+     */
+    private val knowledgeLock = Any()
+    private var knowledge: RagEngine? = null
+    private var ragEnabled = false
+    private var ragTopK = DEFAULT_RAG_TOP_K
+    private var ragMaxContextCharacters = DEFAULT_RAG_MAX_CONTEXT_CHARACTERS
+
+    /**
      * Sends a message to the Llama model and retrieves the complete response.
      *
      * This function communicates with the underlying [LlamaEngine] to get a response for the given
@@ -32,15 +44,21 @@ class FendAIManagerImplementation : FendAIManager {
      * single string. The operation is cancellable and handles exceptions gracefully by returning
      * any partial result collected before the interruption or error.
      *
+     * When retrieval grounding is on and the query matches something, the prompt sent to the model
+     * is [RagEngine.buildPrompt] output instead of [message]. Note the native layer records the
+     * string it is given as the user turn, so the grounded prompt becomes the history entry.
+     * Grounding never blocks the question: a retrieval failure falls back to [message].
+     *
      * @param message The message string to be sent to the model.
      * @return A [String] containing the full response from the model. If an error or cancellation
      * occurs, it may return a partial response or an error message appended to the result.
      */
     override suspend fun sendMessage(message: String): String = coroutineScope {
         val result = StringBuilder()
+        val prompt = groundedPrompt(message) ?: message
 
         try {
-            instance.getResponseAsFlow(message)
+            instance.getResponseAsFlow(prompt)
                 .onEach { piece ->
                     ensureActive()
                     result.append(piece)
@@ -56,6 +74,22 @@ class FendAIManagerImplementation : FendAIManager {
             return@coroutineScope result.toString()
         }
         result.toString()
+    }
+
+    /**
+     * Returns the grounded prompt for [query], or null when retrieval is off, nothing is indexed,
+     * or retrieval failed. Native calls are blocking, so keep this off the main thread.
+     */
+    private fun groundedPrompt(query: String): String? = synchronized(knowledgeLock) {
+        if (!ragEnabled) return@synchronized null
+        val engine = knowledge ?: return@synchronized null
+        if (ragTopK <= 0) return@synchronized null
+        try {
+            engine.buildPrompt(query, ragTopK, ragMaxContextCharacters)
+        } catch (e: Exception) {
+            Log.e("FendAIManager", "RAG grounding failed, answering without context", e)
+            null
+        }
     }
 
     /**
@@ -152,5 +186,63 @@ class FendAIManagerImplementation : FendAIManager {
 
     override fun tokensUsed() {
         instance.getContextLengthUsed()
+    }
+
+    override fun setRagEnabled(enabled: Boolean) = synchronized(knowledgeLock) {
+        ragEnabled = enabled
+    }
+
+    override fun isRagEnabled(): Boolean = synchronized(knowledgeLock) { ragEnabled }
+
+    /**
+     * Indexes knowledge on a background thread: reading a directory tree and scoring a query are
+     * both native and blocking, so neither belongs on the caller's thread.
+     */
+    override fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
+        modelScope.launch {
+            try {
+                // loadPath clears the old index, so swap in a fresh engine instead of reusing this.
+                val engine = RagEngine()
+                val count = engine.load(path)
+                synchronized(knowledgeLock) {
+                    knowledge?.close()
+                    knowledge = engine
+                }
+                withContext(Dispatchers.Main) { onSuccess(count) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("FendAIManager", "Knowledge load failed for $path", e)
+                withContext(Dispatchers.Main) { onError(e) }
+            }
+        }
+    }
+
+    override fun addKnowledge(source: String, text: String) = synchronized(knowledgeLock) {
+        val engine = knowledge ?: RagEngine().also { knowledge = it }
+        engine.addDocument(source, text)
+    }
+
+    override fun searchKnowledge(query: String, topK: Int): List<RagEngine.Result> =
+        synchronized(knowledgeLock) { knowledge?.search(query, topK) ?: emptyList() }
+
+    override fun knowledgeChunkCount(): Int = synchronized(knowledgeLock) { knowledge?.chunkCount ?: 0 }
+
+    override fun releaseKnowledge() = synchronized(knowledgeLock) {
+        knowledge?.close()
+        knowledge = null
+        ragEnabled = false
+    }
+
+    companion object {
+        /** Chunks retrieved per question when the caller does not set its own topK. */
+        const val DEFAULT_RAG_TOP_K = 4
+
+        /**
+         * Ceiling on injected context. Raise it for a long-context model; at 12000 characters this
+         * is roughly 3000 tokens, which fits a typical 4096-token window once the question and
+         * system prompt are added.
+         */
+        const val DEFAULT_RAG_MAX_CONTEXT_CHARACTERS = 12_000
     }
 }

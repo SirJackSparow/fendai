@@ -43,6 +43,34 @@ highest scoring chunks and instructs the model to say it does not know when the 
 not contain an answer. The final prompt should be passed directly to `LlamaEngine` rather
 than added to chat history as a separate assistant message.
 
+Note that `LLMInference::startCompletion()` records whatever string it receives as the user turn.
+Passing a `buildPrompt()` result therefore stores the grounded prompt in chat history, not the
+bare question. Sending the context as a separate system or assistant message instead would record
+the retrieved text as a prior turn.
+
+## Using RAG through `MainFendAI`
+
+Most callers should not touch `com.dg.fendai.core.RagEngine` directly. `MainFendAI` owns one
+retriever and applies grounding automatically:
+
+```kotlin
+MainFendAI.loadKnowledge(
+        context.filesDir.resolve("knowledge").absolutePath,
+        onSuccess = { chunks -> MainFendAI.setRagEnabled(true) },
+        onError = { e -> Log.e("RAG", "index failed", e) })
+
+val answer = MainFendAI.sendMessage("How do I reset the application?")
+```
+
+Grounding is off until `setRagEnabled(true)` is called, and the index survives toggling. While on,
+`sendMessage` builds its prompt from the index and falls back to the plain question when nothing is
+indexed or retrieval fails, so a knowledge-base problem never blocks a conversation. Use
+`searchKnowledge` to inspect what would be retrieved, and `releaseKnowledge` to free the native
+index.
+
+`MainFendAI` decides the grounding fallback and keeps the engine behind a lock; the tests for that
+decision live in `RagGroundingTest`.
+
 ## Function commands
 
 These are the complete commands exposed by `RagEngine`:

@@ -3,6 +3,7 @@ package com.dg.fendai.implement
 import android.content.Context
 import android.util.Log
 import com.dg.fendai.core.LlamaEngine
+import com.dg.fendai.core.RagEngine
 import com.dg.fendai.implement.manager.FendAIManager
 import com.dg.fendai.implement.manager.FendAIManagerImplementation
 import kotlinx.coroutines.coroutineScope
@@ -399,6 +400,92 @@ object MainFendAI {
     fun tokensUsed() {
         ensureInitialized()
         fendAIManager.tokensUsed()
+    }
+
+    // RAG retrieval
+
+    /**
+     * Loads a knowledge base for retrieval-augmented answers.
+     *
+     * Pass a single file or a directory; a directory is walked recursively and every regular file
+     * is read as text. Loading clears the previous index, so call [addKnowledge] afterwards for
+     * in-memory material that should be searchable alongside the files.
+     *
+     * Indexing runs on a background thread and is done by the time [onSuccess] fires. Answers stay
+     * ungrounded until [setRagEnabled] is called.
+     *
+     * ```kotlin
+     * MainFendAI.loadKnowledge(context.filesDir.resolve("knowledge").absolutePath,
+     *     onSuccess = { chunks -> Log.d("RAG", "indexed $chunks chunks"); MainFendAI.setRagEnabled(true) },
+     *     onError = { e -> Log.e("RAG", "index failed", e) })
+     * ```
+     *
+     * @param path Absolute path to a file or directory.
+     * @param onSuccess Receives the number of indexed chunks.
+     * @param onError Receives the failure, on the main thread.
+     */
+    fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
+        ensureInitialized()
+        fendAIManager.loadKnowledge(path, onSuccess, onError)
+    }
+
+    /**
+     * Adds one in-memory document to the current index.
+     *
+     * Use this for runtime knowledge such as user notes or an FAQ that should be retrievable
+     * without writing a file. Creates the index if [loadKnowledge] has not been called yet.
+     */
+    fun addKnowledge(source: String, text: String) {
+        ensureInitialized()
+        fendAIManager.addKnowledge(source, text)
+    }
+
+    /**
+     * Returns the best matching chunks for [query], strongest first.
+     *
+     * Empty when nothing is indexed. Runs a native scan, so call it off the main thread.
+     */
+    fun searchKnowledge(query: String, topK: Int = FendAIManagerImplementation.DEFAULT_RAG_TOP_K):
+        List<RagEngine.Result> {
+        ensureInitialized()
+        return fendAIManager.searchKnowledge(query, topK)
+    }
+
+    /** Returns the number of indexed chunks, or 0 when no knowledge base is loaded. */
+    fun knowledgeChunkCount(): Int {
+        ensureInitialized()
+        return fendAIManager.knowledgeChunkCount()
+    }
+
+    /**
+     * Turns retrieval grounding on or off.
+     *
+     * While on, [sendMessage] builds its prompt from the indexed knowledge and asks the model to
+     * answer only from that context, saying it does not know when the context has no answer. While
+     * off, the question is sent unchanged. Grounding does not alter chat history; the model simply
+     * receives a longer prompt.
+     *
+     * The index survives toggling, so this can be switched per question. Use
+     * [releaseKnowledge] to free the native memory.
+     */
+    fun setRagEnabled(enabled: Boolean) {
+        ensureInitialized()
+        fendAIManager.setRagEnabled(enabled)
+    }
+
+    fun isRagEnabled(): Boolean {
+        ensureInitialized()
+        return fendAIManager.isRagEnabled()
+    }
+
+    /**
+     * Drops the index, frees the native retriever, and turns grounding off.
+     *
+     * Existing chat history is untouched, so previously grounded turns stay in the conversation.
+     */
+    fun releaseKnowledge() {
+        ensureInitialized()
+        fendAIManager.releaseKnowledge()
     }
 
 
