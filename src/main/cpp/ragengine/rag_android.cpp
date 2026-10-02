@@ -54,10 +54,10 @@ Java_com_dg_fendai_core_RagEngine_search(JNIEnv* env, jobject, jlong handle, jst
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_dg_fendai_core_RagEngine_buildPrompt(JNIEnv* env, jobject, jlong handle, jstring query,
-		jint topK, jint maxContextCharacters) {
+		jint topK, jint maxContextCharacters, jboolean allowGeneralKnowledgeWhenNoMatch) {
 	const char* queryChars = env->GetStringUTFChars(query, nullptr);
 	const auto prompt = reinterpret_cast<RagEngine*>(handle)->buildPrompt(queryChars, topK,
-			maxContextCharacters);
+			maxContextCharacters, allowGeneralKnowledgeWhenNoMatch == JNI_TRUE);
 	env->ReleaseStringUTFChars(query, queryChars);
 	return env->NewStringUTF(prompt.c_str());
 }

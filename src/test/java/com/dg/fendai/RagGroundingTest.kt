@@ -19,12 +19,15 @@ class RagGroundingTest {
         enabled: Boolean,
         indexed: Boolean,
         topK: Int,
+        hasMatches: Boolean = true,
+        allowGeneralKnowledgeWhenNoMatch: Boolean = false,
         buildThrows: Boolean = false,
     ): String? = when {
         !enabled -> null
         !indexed -> null
         topK <= 0 -> null
         buildThrows -> null
+        !hasMatches && allowGeneralKnowledgeWhenNoMatch -> null
         else -> "grounded"
     }
 
@@ -52,6 +55,23 @@ class RagGroundingTest {
     @Test
     fun `an enabled indexed engine grounds the question`() {
         assertEquals("grounded", groundedPrompt(enabled = true, indexed = true, topK = 4))
+    }
+
+    @Test
+    fun `general knowledge fallback is opt in when no chunks match`() {
+        assertEquals(
+            "grounded",
+            groundedPrompt(enabled = true, indexed = true, topK = 4, hasMatches = false),
+        )
+        assertNull(
+            groundedPrompt(
+                enabled = true,
+                indexed = true,
+                topK = 4,
+                hasMatches = false,
+                allowGeneralKnowledgeWhenNoMatch = true,
+            ),
+        )
     }
 
     @Test

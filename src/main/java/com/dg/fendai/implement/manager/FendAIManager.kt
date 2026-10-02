@@ -7,6 +7,11 @@ import com.dg.fendai.core.RagEngine
 
 interface FendAIManager {
     suspend fun sendMessage(message: String): String
+
+    /** Backends may opt into a general-knowledge answer when retrieval returns no chunks. */
+    suspend fun sendMessage(message: String, allowGeneralKnowledgeWhenNoMatch: Boolean): String =
+        sendMessage(message)
+
     fun addUserMessage(message: String)
     fun loadModel(modelPath: String,
              params: LlamaEngine.InferenceParams = LlamaEngine.InferenceParams(),

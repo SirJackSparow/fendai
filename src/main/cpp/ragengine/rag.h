@@ -58,9 +58,11 @@ namespace fendai::rag{
          * Builds a grounded prompt for the model.
          *
          * The prompt includes only the strongest retrieved chunks and tells the LLM to use
-         * that context, or say it does not know if the context lacks the answer.
+         * that context, or say it does not know if the context lacks an answer. When enabled,
+         * general-knowledge fallback returns the original query if no chunks match.
          */
-        std::string buildPrompt(const std::string& query, int topK, int maxContextCharacters) const;
+        std::string buildPrompt(const std::string& query, int topK, int maxContextCharacters,
+                bool allowGeneralKnowledgeWhenNoMatch = false) const;
 
         /** Returns the number of indexed chunks. */
         size_t size() const;

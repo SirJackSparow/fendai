@@ -125,24 +125,44 @@ namespace fendai::rag {
 	std::vector<SearchResult> RagEngine::search(const std::string& query, int topK) const {
 		const auto queryTerms = tokenize(query);
 		if (queryTerms.empty() || topK <= 0) return {};
+		// Cache query weights once; repeated terms remain repeated to preserve scoring.
+		std::vector<float> inverseFrequencies;
+		inverseFrequencies.reserve(queryTerms.size());
+		for (const auto& term : queryTerms) {
+			const auto documentFrequency = _documentFrequency.find(term);
+			if (documentFrequency == _documentFrequency.end()) {
+				inverseFrequencies.push_back(0.0f);
+				continue;
+			}
+			inverseFrequencies.push_back(std::log(
+					(static_cast<float>(_chunks.size()) + 1.0f) /
+					(static_cast<float>(documentFrequency->second) + 1.0f)) + 1.0f);
+		}
+
 		std::vector<SearchResult> results;
 		for (const auto& chunk : _chunks) {
 			float score = 0.0f;
-			for (const auto& term : queryTerms) {
+			for (size_t index = 0; index < queryTerms.size(); ++index) {
+				const auto& term = queryTerms[index];
+				if (inverseFrequencies[index] == 0.0f) continue;
 				const auto frequency = chunk.terms.find(term);
 				if (frequency == chunk.terms.end()) continue;
-				const int documentFrequency = _documentFrequency.at(term);
-				const float inverseFrequency = std::log(
-						(static_cast<float>(_chunks.size()) + 1.0f) /
-						(static_cast<float>(documentFrequency) + 1.0f)) + 1.0f;
-				score += (1.0f + std::log(static_cast<float>(frequency->second))) * inverseFrequency;
+				score += (1.0f + std::log(static_cast<float>(frequency->second))) *
+						inverseFrequencies[index];
 			}
 			if (score > 0.0f) results.push_back({chunk.source, chunk.text, score});
 		}
-		std::sort(results.begin(), results.end(), [](const auto& left, const auto& right) {
+		const auto byScore = [](const auto& left, const auto& right) {
 			return left.score > right.score;
-		});
-		if (results.size() > static_cast<size_t>(topK)) results.resize(static_cast<size_t>(topK));
+		};
+		const auto resultLimit = static_cast<size_t>(topK);
+		if (results.size() > resultLimit) {
+			// Order only the requested prefix when lower-ranked results will be discarded.
+			std::partial_sort(results.begin(), results.begin() + resultLimit, results.end(), byScore);
+			results.resize(resultLimit);
+		} else {
+			std::sort(results.begin(), results.end(), byScore);
+		}
 		return results;
 	}
 
@@ -154,12 +174,15 @@ namespace fendai::rag {
 	 * model output back to the local files it indexed.
 	 */
 	std::string RagEngine::buildPrompt(const std::string& query, int topK,
-			int maxContextCharacters) const {
+			int maxContextCharacters, bool allowGeneralKnowledgeWhenNoMatch) const {
+		const auto results = search(query, topK);
+		if (results.empty() && allowGeneralKnowledgeWhenNoMatch) return query;
+
 		std::ostringstream prompt;
 		prompt << "Answer the question using only the context below. If the context does not "
 				  "contain the answer, say that you do not know. Do not invent sources.\n\n";
 		int usedCharacters = 0;
-		for (const auto& result : search(query, topK)) {
+		for (const auto& result : results) {
 			const std::string block = "[Source: " + result.source + "]\n" + result.text + "\n\n";
 			if (usedCharacters + static_cast<int>(block.size()) > maxContextCharacters) break;
 			prompt << block;

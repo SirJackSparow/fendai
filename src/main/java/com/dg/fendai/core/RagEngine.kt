@@ -35,11 +35,23 @@ class RagEngine : AutoCloseable {
     }
 
     /** Builds a grounded prompt ready for [LlamaEngine.getResponse]. */
-    fun buildPrompt(query: String, topK: Int = 4, maxContextCharacters: Int = 12000): String {
+    fun buildPrompt(query: String, topK: Int = 4, maxContextCharacters: Int = 12000): String =
+        buildPrompt(query, topK, maxContextCharacters, allowGeneralKnowledgeWhenNoMatch = false)
+
+    /**
+     * Returns the original query instead of a grounded prompt when fallback is enabled
+     * and no chunks match.
+     */
+    fun buildPrompt(
+        query: String,
+        topK: Int,
+        maxContextCharacters: Int,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
+    ): String {
         checkOpen()
         require(query.isNotBlank()) { "query must not be blank" }
         require(maxContextCharacters > 0) { "maxContextCharacters must be positive" }
-        return buildPrompt(nativeHandle, query, topK, maxContextCharacters)
+        return buildPrompt(nativeHandle, query, topK, maxContextCharacters, allowGeneralKnowledgeWhenNoMatch)
     }
 
     val chunkCount: Int
@@ -62,6 +74,12 @@ class RagEngine : AutoCloseable {
     private external fun loadPath(handle: Long, path: String): Int
     private external fun addDocument(handle: Long, source: String, text: String)
     private external fun search(handle: Long, query: String, topK: Int): Array<String>
-    private external fun buildPrompt(handle: Long, query: String, topK: Int, maxContextCharacters: Int): String
+    private external fun buildPrompt(
+        handle: Long,
+        query: String,
+        topK: Int,
+        maxContextCharacters: Int,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
+    ): String
     private external fun size(handle: Long): Int
 }

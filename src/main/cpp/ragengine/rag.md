@@ -60,11 +60,21 @@ MainFendAI.loadKnowledge(
         onError = { e -> Log.e("RAG", "index failed", e) })
 
 val answer = MainFendAI.sendMessage("How do I reset the application?")
+
+// Opt in for this turn only: let the model use general knowledge if no chunks match.
+val generalAnswer = MainFendAI.sendMessage(
+	"What is the capital of France?",
+	allowGeneralKnowledgeWhenNoMatch = true,
+)
 ```
 
 Grounding is off until `setRagEnabled(true)` is called, and the index survives toggling. While on,
 `sendMessage` builds its prompt from the index and falls back to the plain question when nothing is
-indexed or retrieval fails, so a knowledge-base problem never blocks a conversation. Use
+indexed or retrieval fails, so a knowledge-base problem never blocks a conversation. When the index
+is enabled and has no matching chunks, the default is a strict context-only prompt. Passing
+`allowGeneralKnowledgeWhenNoMatch = true` sends the original question unchanged for that turn;
+the resulting answer may use the model's pretrained knowledge and is not grounded in local sources.
+Matches remain grounded even when the option is enabled. Use
 `searchKnowledge` to inspect what would be retrieved, and `releaseKnowledge` to free the native
 index.
 

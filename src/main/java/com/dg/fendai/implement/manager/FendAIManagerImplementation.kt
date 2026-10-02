@@ -45,17 +45,28 @@ class FendAIManagerImplementation : FendAIManager {
      * any partial result collected before the interruption or error.
      *
      * When retrieval grounding is on and the query matches something, the prompt sent to the model
-     * is [RagEngine.buildPrompt] output instead of [message]. Note the native layer records the
-     * string it is given as the user turn, so the grounded prompt becomes the history entry.
-     * Grounding never blocks the question: a retrieval failure falls back to [message].
+     * is [RagEngine.buildPrompt] output instead of [message]. If no chunks match, the optional
+     * general-knowledge fallback sends the original question. Retrieval failures also fall back
+     * to [message].
      *
      * @param message The message string to be sent to the model.
      * @return A [String] containing the full response from the model. If an error or cancellation
      * occurs, it may return a partial response or an error message appended to the result.
      */
-    override suspend fun sendMessage(message: String): String = coroutineScope {
+    override suspend fun sendMessage(message: String): String = sendMessage(message, false)
+
+    /**
+     * Sends the original question when flexible fallback is enabled and no chunks match.
+     *
+     * @param message The message string to be sent to the model.
+     * @param allowGeneralKnowledgeWhenNoMatch Whether an unmatched query may use model knowledge.
+     */
+    override suspend fun sendMessage(
+        message: String,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
+    ): String = coroutineScope {
         val result = StringBuilder()
-        val prompt = groundedPrompt(message) ?: message
+        val prompt = groundedPrompt(message, allowGeneralKnowledgeWhenNoMatch) ?: message
 
         try {
             instance.getResponseAsFlow(prompt)
@@ -80,12 +91,18 @@ class FendAIManagerImplementation : FendAIManager {
      * Returns the grounded prompt for [query], or null when retrieval is off, nothing is indexed,
      * or retrieval failed. Native calls are blocking, so keep this off the main thread.
      */
-    private fun groundedPrompt(query: String): String? = synchronized(knowledgeLock) {
+    private fun groundedPrompt(query: String, allowGeneralKnowledgeWhenNoMatch: Boolean): String? =
+        synchronized(knowledgeLock) {
         if (!ragEnabled) return@synchronized null
         val engine = knowledge ?: return@synchronized null
         if (ragTopK <= 0) return@synchronized null
         try {
-            engine.buildPrompt(query, ragTopK, ragMaxContextCharacters)
+            engine.buildPrompt(
+                query,
+                ragTopK,
+                ragMaxContextCharacters,
+                allowGeneralKnowledgeWhenNoMatch,
+            )
         } catch (e: Exception) {
             Log.e("FendAIManager", "RAG grounding failed, answering without context", e)
             null

@@ -80,15 +80,12 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
 
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
-    model_params.n_gpu_layers = nGpuLayers; // ← ADD: offload to GPU
-
-    // A null device list lets llama.cpp use every available backend. On Android
-    // that can select Vulkan even when n_gpu_layers is zero, so make CPU mode explicit.
+    ggml_backend_dev_t gpuDevice = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_GPU);
+    if (gpuDevice == nullptr) {
+        gpuDevice = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_IGPU);
+    }
     ggml_backend_dev_t cpuDevice = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_CPU);
     ggml_backend_dev_t cpuDevices[] = {cpuDevice, nullptr};
-    if (nGpuLayers <= 0 && cpuDevice != nullptr) {
-        model_params.devices = cpuDevices;
-    }
 
     if (useMmap && useMlock) {
         model_params.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
@@ -99,22 +96,58 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     } else {
         model_params.load_mode = LLAMA_LOAD_MODE_NONE;
     }
-    _model = llama_model_load_from_file(model_path, model_params);
-    if (!_model) {
-        LOGe("failed to load model from %s", model_path);
-        throw std::runtime_error("loadModel() failed");
-    }
-
-    // create an instance of llama_context
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.n_ctx = contextSize;
     ctx_params.n_batch = std::min<long>(contextSize, 512);
     ctx_params.n_threads = nThreads;
     ctx_params.no_perf = true; // disable performance metrics
-    _ctx = llama_init_from_model(_model, ctx_params);
-    if (!_ctx) {
-        LOGe("llama_new_context_with_model() returned null)");
-        throw std::runtime_error("llama_new_context_with_model() returned null");
+
+    const bool requestGpu = nGpuLayers != 0 && gpuDevice != nullptr;
+    bool loaded = false;
+    if (requestGpu) {
+        ggml_backend_dev_t gpuDevices[] = {gpuDevice, nullptr};
+        llama_model_params gpuParams = model_params;
+        gpuParams.devices = gpuDevices;
+        gpuParams.n_gpu_layers = nGpuLayers;
+        LOGi("Trying GPU backend %s with %s layers offloaded",
+             ggml_backend_dev_name(gpuDevice),
+             nGpuLayers < 0 ? "all" : std::to_string(nGpuLayers).c_str());
+
+        _model = llama_model_load_from_file(model_path, gpuParams);
+        if (_model != nullptr) {
+            _ctx = llama_init_from_model(_model, ctx_params);
+            loaded = _ctx != nullptr;
+            if (!loaded) {
+                llama_model_free(_model);
+                _model = nullptr;
+            }
+        }
+
+        if (!loaded) {
+            LOGe("GPU model initialization failed; retrying with CPU");
+        }
+    } else if (nGpuLayers == 0) {
+        LOGi("GPU offload disabled; using CPU");
+    } else {
+        LOGi("No GPU backend available; using CPU");
+    }
+
+    if (!loaded) {
+        model_params.n_gpu_layers = 0;
+        model_params.devices = cpuDevice != nullptr ? cpuDevices : nullptr;
+        _model = llama_model_load_from_file(model_path, model_params);
+        if (_model == nullptr) {
+            LOGe("failed to load model from %s using CPU", model_path);
+            throw std::runtime_error("Model load failed on GPU and CPU");
+        }
+
+        _ctx = llama_init_from_model(_model, ctx_params);
+        if (_ctx == nullptr) {
+            llama_model_free(_model);
+            _model = nullptr;
+            LOGe("llama context initialization failed using CPU");
+            throw std::runtime_error("Model context initialization failed on CPU");
+        }
     }
 
     // create an instance of llama_sampler

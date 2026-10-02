@@ -149,6 +149,7 @@ class LlamaEngine {
      * @property usePenalties Whether to apply repetition penalties. Default is false.
      * @property xtcP Probability threshold for XTC sampler. Default is 0.0f (disabled).
      * @property xtcT Threshold for XTC sampler. Default is 1.0f.
+     * @property nGpuLayers Number of model layers to offload to the GPU. Default is -1 (automatic).
      */
     data class InferenceParams(
         val minP: Float = 0.1f,
@@ -165,7 +166,7 @@ class LlamaEngine {
         val xtcP: Float = 0.0f,
         val xtcT: Float = 1.0f,
         val maxResponseTokens: Int = 512,
-        val nGpuLayers: Int = 0 // ← ADD: 0 means CPU only, >0 means offload layers to GPU
+        val nGpuLayers: Int = -1
     )
 
 
@@ -473,7 +474,7 @@ class LlamaEngine {
         topP: Float,
         usePenalties: Boolean = false,
         maxResponseTokens: Int = 512,
-        nGpuLayers: Int = 0 // ← ADD
+        nGpuLayers: Int = -1
     ): Long
 
     private external fun addChatMessage(
