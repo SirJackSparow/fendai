@@ -130,11 +130,12 @@ object MainFendAI {
                 }
 
                 //take the contextsize and chat template from the model
-                val ggufReader = GGUFReader()
-                ggufReader.load(destFile.absolutePath)
-                contextSizes = ggufReader.getContextSize() ?: 1024L
-                chatTemplates = ggufReader.getChatTemplate()
-                    ?: DEFAULT_TEMPLATE_MESSAGE
+                GGUFReader().use { ggufReader ->
+                    ggufReader.load(destFile.absolutePath)
+                    contextSizes = ggufReader.getContextSize() ?: 1024L
+                    chatTemplates = ggufReader.getChatTemplate()
+                        ?: DEFAULT_TEMPLATE_MESSAGE
+                }
 
                 loadModel(
                     modelPath = File(context.filesDir, fileName).absolutePath,
@@ -178,11 +179,14 @@ object MainFendAI {
         onSuccess: (Boolean) -> Unit,
         onError: (Exception) -> Unit
     ) {
+        val configuredContextSize =
+            (router.call(router.pathFunction[1]) as Long?)?.takeIf { it > 0L }
+        val defaultContextSize = minOf(contextSize, LlamaEngine.MAX_DEFAULT_CONTEXT_SIZE)
         val params = LlamaEngine.InferenceParams(
 
             //router.call(router.pathFunction[5] this is for type_of_file
             temperature = (router.call(router.pathFunction[3])) as Float? ?: 0.9f,
-            contextSize = (router.call(router.pathFunction[1])) as Long? ?: contextSize,
+            contextSize = configuredContextSize ?: defaultContextSize,
             chatTemplate = router.call(router.pathFunction[0]) as String? ?: chatTemplate,
             topK = router.call(router.pathFunction[4]) as Int? ?: 0,
             topP = router.call(router.pathFunction[5]) as Float? ?: 0.0f,

@@ -15,6 +15,13 @@ Java_com_dg_fendai_core_GGUFReader_getGGUFContextNativeHandle(JNIEnv* env, jobje
     return reinterpret_cast<jlong>(ggufContext);
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_com_dg_fendai_core_GGUFReader_freeGGUFContext(JNIEnv*, jobject, jlong nativeHandle) {
+    if (nativeHandle != 0) {
+        gguf_free(reinterpret_cast<gguf_context*>(nativeHandle));
+    }
+}
+
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_dg_fendai_core_GGUFReader_getContextSize(JNIEnv* env, jobject thiz, jlong nativeHandle) {
     gguf_context* ggufContext       = reinterpret_cast<gguf_context*>(nativeHandle);

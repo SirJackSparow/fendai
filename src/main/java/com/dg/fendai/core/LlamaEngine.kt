@@ -14,6 +14,12 @@ import java.io.FileNotFoundException
 
 class LlamaEngine {
     companion object Companion {
+        private const val MODEL_SWITCH_TAG = "MODEL_SWITCH"
+        private const val GENERATION_TAG = "LlamaEngine"
+
+        /** Default upper bound for model metadata context sizes to limit KV-cache memory. */
+        const val MAX_DEFAULT_CONTEXT_SIZE = 4096L
+
         init {
             val logTag = LlamaEngine::class.java.simpleName
 
@@ -122,6 +128,9 @@ class LlamaEngine {
     @Volatile
     private var nativePtr = 0L // or contextPointer
 
+    val isLoaded: Boolean
+        get() = nativePtr != 0L
+
     /**
      * Provides default values for inference parameters.
      * These values are used when the corresponding parameters are not provided
@@ -191,27 +200,31 @@ class LlamaEngine {
         modelPath: String,
         params: InferenceParams = InferenceParams(),
     ) = withContext(Dispatchers.IO) {
-
         try {
-            Log.d("MODEL_SWITCH", "Reading GGUF...")
-            val ggufReader = GGUFReader()
-            ggufReader.load(modelPath)
-            Log.d("MODEL_SWITCH", "GGUF read OK!")
-            val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
-            val modelChatTemplate =
-                ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+            Log.d(MODEL_SWITCH_TAG, "Reading GGUF...")
+            val (modelContextSize, modelChatTemplate) = GGUFReader().use { ggufReader ->
+                ggufReader.load(modelPath)
+                Log.d(MODEL_SWITCH_TAG, "GGUF read OK!")
+                (ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize) to
+                    (ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate)
+            }
+            val defaultContextSize = minOf(modelContextSize, MAX_DEFAULT_CONTEXT_SIZE)
 
-            Log.d("MODEL_SWITCH", "contextSize: $modelContextSize")
-            Log.d("MODEL_SWITCH", "chatTemplate: $modelChatTemplate")
-            Log.d("MODEL_SWITCH", "Calling loadModel C++...")
+            val contextSize = params.contextSize ?: defaultContextSize
+            require(contextSize > 0) { "contextSize must be positive" }
+            Log.d(MODEL_SWITCH_TAG, "contextSize: $contextSize")
+            Log.d(MODEL_SWITCH_TAG, "chatTemplate: $modelChatTemplate")
+            Log.d(MODEL_SWITCH_TAG, "Calling loadModel C++...")
 
-            nativePtr =
+            releaseNativeModel()
+
+            val loadedPtr =
                 loadModel(
                     modelPath,
                     params.minP,
                     params.temperature,
                     params.storeChats,
-                    params.contextSize ?: modelContextSize,
+                    contextSize,
                     params.chatTemplate ?: modelChatTemplate,
                     params.numThreads,
                     params.useMmap,
@@ -220,17 +233,17 @@ class LlamaEngine {
                     params.topP,
                     params.usePenalties,
                     params.maxResponseTokens,
-                    params.nGpuLayers // ← ADD
+                    params.nGpuLayers
                 )
-            if (nativePtr == 0L) throw RuntimeException("nativePtr is 0L after loadModel")
+            require(loadedPtr != 0L) { "nativePtr is 0L after loadModel" }
+            nativePtr = loadedPtr
 
-            Log.d("MODEL_SWITCH", "New model ptr: $nativePtr")
-            Log.d("MODEL_SWITCH", "=== LOAD SUCCESS ===")
+            Log.d(MODEL_SWITCH_TAG, "New model ptr: $nativePtr")
+            Log.d(MODEL_SWITCH_TAG, "=== LOAD SUCCESS ===")
         } catch (e: Exception) {
-            Log.e("MODEL_SWITCH", "=== LOAD FAILED: ${e.message} ===")
+            Log.e(MODEL_SWITCH_TAG, "=== LOAD FAILED: ${e.message} ===")
             throw e
         }
-
     }
 
     /**
@@ -304,37 +317,24 @@ class LlamaEngine {
 
     fun getResponseAsFlow(message: String): Flow<String> =
         flow {
-            verifyHandle()                 // throws if model not loaded
+            verifyHandle()
             startCompletion(nativePtr, message)
 
             try {
                 while (true) {
-                    // Call into JNI which now throws Java exceptions on failure.
                     val piece = completionLoop(nativePtr)
                         ?: throw RuntimeException("native completionLoop returned null")
 
-                    // end-of-generation token from native
                     if (piece == "[EOG]") break
-
-                    // native may return "" for partial token accumulation; ignore it
                     if (piece.isNotEmpty()) emit(piece)
                 }
             } finally {
-                // ensure native cleanup always runs
-                try {
-                    stopCompletion(nativePtr)
-                } catch (t: Throwable) {
-                    // Log but do not throw (we are in finally)
-                    Log.e("LlamaEngine", "stopCompletion failed", t)
-                }
+                stopGenerationSafely(nativePtr)
             }
         }
-            .flowOn(Dispatchers.IO) // run native work on IO threads
+            .flowOn(Dispatchers.IO)
             .catch { e ->
-                // Option A: emit a friendly error message into the stream then complete
                 emit("[ERROR] ${e.message ?: "native failure"}")
-                // Option B: rethrow to let collector handle the exception instead:
-                // throw e
             }
 
     /**
@@ -348,14 +348,26 @@ class LlamaEngine {
     fun getResponse(query: String): String {
         verifyHandle()
         startCompletion(nativePtr, query)
-        var piece = completionLoop(nativePtr)
-        var response = ""
-        while (piece != "[EOG]") {
-            response += piece
-            piece = completionLoop(nativePtr)
+
+        val response = buildString {
+            var piece = completionLoop(nativePtr)
+            while (piece != "[EOG]") {
+                append(piece)
+                piece = completionLoop(nativePtr)
+            }
         }
+
         stopCompletion(nativePtr)
         return response
+    }
+
+    /**
+     * Unloads the LLM model and releases native resources.
+     * This is the explicit Kotlin API for model teardown and is the equivalent of
+     * calling the native freeModel() JNI entry point.
+     */
+    fun unloadModel() {
+        releaseNativeModel()
     }
 
     /**
@@ -364,14 +376,31 @@ class LlamaEngine {
      * to prevent memory leaks.
      */
     fun close() {
-        if (nativePtr != 0L) {
-            close(nativePtr)
-            nativePtr = 0L
-        }
+        releaseNativeModel(useNativeClose = true)
     }
 
     private fun verifyHandle() {
         check(nativePtr != 0L) { "Model is not loaded. Use LlamaEngine.load to load the model" }
+    }
+
+    private fun releaseNativeModel(useNativeClose: Boolean = false) {
+        val ptr = nativePtr
+        if (ptr == 0L) return
+
+        if (useNativeClose) {
+            close(ptr)
+        } else {
+            freeModel(ptr)
+        }
+        nativePtr = 0L
+    }
+
+    private fun stopGenerationSafely(modelPtr: Long) {
+        try {
+            stopCompletion(modelPtr)
+        } catch (t: Throwable) {
+            Log.e(GENERATION_TAG, "stopCompletion failed", t)
+        }
     }
 
     /**
@@ -425,11 +454,7 @@ class LlamaEngine {
                     if (piece.isNotEmpty()) emit(piece)
                 }
             } finally {
-                try {
-                    stopCompletion(nativePtr)
-                } catch (t: Throwable) {
-                    Log.e("LlamaEngine", "stopCompletion failed", t)
-                }
+                stopGenerationSafely(nativePtr)
             }
         }
             .flowOn(Dispatchers.IO)
@@ -454,10 +479,7 @@ class LlamaEngine {
     }
 
     fun free() {
-        if (nativePtr != 0L) {
-            freeModel(nativePtr)
-            nativePtr = 0L
-        }
+        unloadModel()
     }
 
     private external fun loadModel(

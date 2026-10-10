@@ -31,6 +31,7 @@ class FendAIManagerImplementation : FendAIManager {
      * index has no internal synchronization and [sendMessage] reads it from the caller's thread.
      */
     private val knowledgeLock = Any()
+    private val knowledgeLoadLock = Any()
     private var knowledge: RagEngine? = null
     private var ragEnabled = false
     private var ragTopK = DEFAULT_RAG_TOP_K
@@ -218,12 +219,24 @@ class FendAIManagerImplementation : FendAIManager {
     override fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
         modelScope.launch {
             try {
-                // loadPath clears the old index, so swap in a fresh engine instead of reusing this.
-                val engine = RagEngine()
-                val count = engine.load(path)
-                synchronized(knowledgeLock) {
-                    knowledge?.close()
-                    knowledge = engine
+                val count = synchronized(knowledgeLoadLock) {
+                    val previous = synchronized(knowledgeLock) {
+                        knowledge.also { knowledge = null }
+                    }
+                    previous?.close()
+
+                    val engine = RagEngine()
+                    try {
+                        val loadedChunks = engine.load(path)
+                        synchronized(knowledgeLock) {
+                            knowledge?.close()
+                            knowledge = engine
+                        }
+                        loadedChunks
+                    } catch (e: Exception) {
+                        engine.close()
+                        throw e
+                    }
                 }
                 withContext(Dispatchers.Main) { onSuccess(count) }
             } catch (e: CancellationException) {
@@ -249,6 +262,10 @@ class FendAIManagerImplementation : FendAIManager {
         knowledge?.close()
         knowledge = null
         ragEnabled = false
+    }
+
+    override fun unLoadModel() {
+        instance.free()
     }
 
     companion object {

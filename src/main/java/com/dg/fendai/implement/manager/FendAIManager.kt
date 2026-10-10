@@ -66,4 +66,9 @@ interface FendAIManager {
 
     /** Drops the index and releases the native retriever. Grounding reverts to the raw question. */
     fun releaseKnowledge()
+
+    /**
+     * unload model
+     */
+    fun unLoadModel()
 }

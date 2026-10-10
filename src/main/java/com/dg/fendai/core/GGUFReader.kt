@@ -14,18 +14,15 @@ import kotlinx.coroutines.withContext
  *
  * Example usage:
  * ```kotlin
- * val reader = GGUFReader()
- * try {
+ * GGUFReader().use { reader ->
  *     reader.load("/path/to/your/model.gguf")
  *     val contextSize = reader.getContextSize()
  *     val chatTemplate = reader.getChatTemplate()
  *     // Use the retrieved metadata...
- * } catch (e: Exception) {
- *     // Handle loading errors
  * }
  * ```
  */
-class GGUFReader {
+class GGUFReader : AutoCloseable {
     companion object {
         init {
             System.loadLibrary("ggufreader")
@@ -36,8 +33,17 @@ class GGUFReader {
 
     suspend fun load(modelPath: String) =
         withContext(Dispatchers.IO) {
+            close()
             nativeHandle = getGGUFContextNativeHandle(modelPath)
+            check(nativeHandle != 0L) { "Failed to load GGUF metadata from $modelPath" }
         }
+
+    override fun close() {
+        if (nativeHandle != 0L) {
+            freeGGUFContext(nativeHandle)
+            nativeHandle = 0L
+        }
+    }
 
     fun getContextSize() : Long? {
         assert(nativeHandle != 0L) { "Use GGUFReader.load() to initialize the reader" }
@@ -58,6 +64,7 @@ class GGUFReader {
     }
 
     private external fun getGGUFContextNativeHandle(modelPath: String): Long
+    private external fun freeGGUFContext(nativeHandle: Long)
     private external fun getContextSize(nativeHandle: Long): Long
     private external fun getChatTemplate(nativeHandle: Long): String
 }

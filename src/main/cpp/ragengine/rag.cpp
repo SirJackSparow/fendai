@@ -6,10 +6,11 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 namespace {
-	constexpr size_t kChunkWords = 180;
-	constexpr size_t kChunkOverlap = 30;
+	constexpr size_t kChunkWords = 256;
+	constexpr size_t kChunkOverlap = 24;
 
 	/**
 	 * Normalizes input into lowercase word tokens.
@@ -37,23 +38,49 @@ namespace {
 	 * Breaks one large document into overlapping chunks.
 	 *
 	 * The engine does not index one giant text blob. Instead it creates smaller
-	 * windows of words (around 180 words with 30-word overlap) so the retriever can
+	 * windows of words (around 256 words with 24-word overlap) so the retriever can
 	 * find the most relevant snippet and keep the context precise.
 	 */
 	void addChunks(fendai::rag::RagEngine& engine, const std::string& source,
-			const std::string& text) {
-		const auto words = tokenize(text);
-		if (words.empty()) return;
-		for (size_t start = 0; start < words.size();) {
-			const size_t end = std::min(start + kChunkWords, words.size());
+			std::istream& input) {
+		std::vector<std::string> window;
+		window.reserve(kChunkWords + 1);
+		std::string token;
+		size_t chunksAdded = 0;
+		auto addWindow = [&] {
 			std::ostringstream chunk;
-			for (size_t index = start; index < end; ++index) {
-				if (index != start) chunk << ' ';
-				chunk << words[index];
+			for (size_t index = 0; index < window.size(); ++index) {
+				if (index != 0) chunk << ' ';
+				chunk << window[index];
 			}
 			engine.addDocument(source, chunk.str());
-			if (end == words.size()) break;
-			start = end > kChunkOverlap ? end - kChunkOverlap : end;
+			++chunksAdded;
+		};
+		auto consumeCharacter = [&](unsigned char character) {
+			if (std::isalnum(character)) {
+				token.push_back(static_cast<char>(std::tolower(character)));
+			} else if (!token.empty()) {
+				window.push_back(std::move(token));
+				token.clear();
+				if (window.size() > kChunkWords) {
+					std::string overflow = std::move(window.back());
+					window.pop_back();
+					addWindow();
+					window.erase(window.begin(), window.begin() +
+							static_cast<std::ptrdiff_t>(kChunkWords - kChunkOverlap));
+					window.push_back(std::move(overflow));
+				}
+			}
+		};
+		char character;
+		while (input.get(character)) {
+			consumeCharacter(static_cast<unsigned char>(character));
+		}
+		if (!token.empty()) {
+			window.push_back(std::move(token));
+		}
+		if (!window.empty() && (chunksAdded == 0 || window.size() > kChunkOverlap)) {
+			addWindow();
 		}
 	}
 }
@@ -66,8 +93,8 @@ namespace fendai::rag {
 	 * knowledge. It drops both the chunks and the stored document-frequency counts.
 	 */
 	void RagEngine::clear() {
-		_chunks.clear();
-		_documentFrequency.clear();
+		std::vector<Chunk>().swap(_chunks);
+		std::unordered_map<std::string, int>().swap(_documentFrequency);
 	}
 
 	/**
@@ -78,6 +105,22 @@ namespace fendai::rag {
 	 * give more weight to distinctive words.
 	 */
 	void RagEngine::addDocument(const std::string& source, const std::string& text) {
+		size_t wordCount = 0;
+		bool inWord = false;
+		for (unsigned char character : text) {
+			if (std::isalnum(character)) {
+				if (!inWord) ++wordCount;
+				inWord = true;
+			} else {
+				inWord = false;
+			}
+		}
+		if (wordCount > kChunkWords) {
+			std::istringstream input(text);
+			addChunks(*this, source, input);
+			return;
+		}
+
 		const auto words = tokenize(text);
 		if (words.empty()) return;
 		Chunk chunk{source, text, {}};
@@ -100,9 +143,7 @@ namespace fendai::rag {
 		auto loadFile = [this](const std::filesystem::path& file) {
 			std::ifstream input(file, std::ios::in | std::ios::binary);
 			if (!input) return;
-			std::ostringstream contents;
-			contents << input.rdbuf();
-			addChunks(*this, file.string(), contents.str());
+			addChunks(*this, file.string(), input);
 		};
 		if (std::filesystem::is_regular_file(root)) {
 			loadFile(root);
@@ -139,7 +180,13 @@ namespace fendai::rag {
 					(static_cast<float>(documentFrequency->second) + 1.0f)) + 1.0f);
 		}
 
-		std::vector<SearchResult> results;
+		struct Candidate {
+			const Chunk* chunk;
+			float score;
+		};
+		const size_t resultLimit = static_cast<size_t>(topK);
+		std::vector<Candidate> best;
+		best.reserve(std::min(resultLimit, _chunks.size()));
 		for (const auto& chunk : _chunks) {
 			float score = 0.0f;
 			for (size_t index = 0; index < queryTerms.size(); ++index) {
@@ -150,18 +197,19 @@ namespace fendai::rag {
 				score += (1.0f + std::log(static_cast<float>(frequency->second))) *
 						inverseFrequencies[index];
 			}
-			if (score > 0.0f) results.push_back({chunk.source, chunk.text, score});
+			if (score <= 0.0f) continue;
+			const auto position = std::lower_bound(best.begin(), best.end(), score,
+					[](const Candidate& candidate, float candidateScore) {
+						return candidate.score > candidateScore;
+					});
+			if (best.size() == resultLimit && position == best.end()) continue;
+			best.insert(position, Candidate{&chunk, score});
+			if (best.size() > resultLimit) best.pop_back();
 		}
-		const auto byScore = [](const auto& left, const auto& right) {
-			return left.score > right.score;
-		};
-		const auto resultLimit = static_cast<size_t>(topK);
-		if (results.size() > resultLimit) {
-			// Order only the requested prefix when lower-ranked results will be discarded.
-			std::partial_sort(results.begin(), results.begin() + resultLimit, results.end(), byScore);
-			results.resize(resultLimit);
-		} else {
-			std::sort(results.begin(), results.end(), byScore);
+		std::vector<SearchResult> results;
+		results.reserve(best.size());
+		for (const auto& candidate : best) {
+			results.push_back({candidate.chunk->source, candidate.chunk->text, candidate.score});
 		}
 		return results;
 	}
