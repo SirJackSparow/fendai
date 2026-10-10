@@ -11,7 +11,6 @@ import kotlin.reflect.KClass
 import com.dg.fendai.core.GGUFReader
 import android.net.Uri
 import android.provider.OpenableColumns
-//import com.dg.fendai.core.InferenceTFParams
 import com.dg.fendai.implement.define.DefineLoadModelImpl
 import com.dg.fendai.implement.define.DefineLoadModelInterface
 import kotlinx.coroutines.CoroutineScope
@@ -22,10 +21,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import com.dg.fendai.implement.Utils.DEFAULT_TEMPLATE_MESSAGE
-//import com.dg.fendai.implement.manager.FendAITFLiteManager
-//import com.dg.fendai.implement.manager.FendAITFLiteManagerImplementation
-//import com.dg.fendai.core.ChatMessage
-//import com.dg.fendai.core.Role
+
 
 /**
  * The main entry point and singleton controller for the FendAI library.
@@ -179,24 +175,23 @@ object MainFendAI {
         onSuccess: (Boolean) -> Unit,
         onError: (Exception) -> Unit
     ) {
+        val promptRoute = router.prompt?.let { "$it/" }
+        fun configValue(name: String): Any? =
+            promptRoute?.let { router.call("$it$name") }
+
         val configuredContextSize =
-            (router.call(router.pathFunction[1]) as Long?)?.takeIf { it > 0L }
+            (configValue("contextSize") as? Long)?.takeIf { it > 0L }
         val defaultContextSize = minOf(contextSize, LlamaEngine.MAX_DEFAULT_CONTEXT_SIZE)
         val params = LlamaEngine.InferenceParams(
 
-            //router.call(router.pathFunction[5] this is for type_of_file
-            temperature = (router.call(router.pathFunction[3])) as Float? ?: 0.9f,
+            temperature = configValue("temperature") as? Float ?: 0.9f,
             contextSize = configuredContextSize ?: defaultContextSize,
-            chatTemplate = router.call(router.pathFunction[0]) as String? ?: chatTemplate,
-            topK = router.call(router.pathFunction[4]) as Int? ?: 0,
-            topP = router.call(router.pathFunction[5]) as Float? ?: 0.0f,
-            usePenalties = router.call(router.pathFunction[7]) as Boolean? ?: false,
-            maxResponseTokens = router.call(router.pathFunction[2]) as Int? ?: 512
+            chatTemplate = configValue("chatTemplate") as? String ?: chatTemplate,
+            topK = configValue("topK") as? Int ?: 0,
+            topP = configValue("topP") as? Float ?: 0.0f,
+            usePenalties = configValue("usePinalties") as? Boolean ?: false,
+            maxResponseTokens = configValue("maxResponseTokens") as? Int ?: 512
         )
-
-        router.pathFunction.forEachIndexed { i, v ->
-            Log.d(v.uppercase(), ": ${router.pathFunction[i].lowercase()}")
-        }
 
         fendAIManager.loadModel(
             modelPath = modelPath,
@@ -426,9 +421,10 @@ object MainFendAI {
     /**
      * Loads a knowledge base for retrieval-augmented answers.
      *
-     * Pass a single file or a directory; a directory is walked recursively and every regular file
-     * is read as text. Loading clears the previous index, so call [addKnowledge] afterwards for
-     * in-memory material that should be searchable alongside the files.
+     * Pass a single text file or a directory; directories are walked recursively. Text-based PDFs
+     * are also supported by the overload that accepts an Android [Context]. Scanned PDFs require
+     * OCR, which is not included. Loading clears the previous index, so call [addKnowledge]
+     * afterwards for in-memory material that should be searchable alongside the files.
      *
      * Indexing runs on a background thread and is done by the time [onSuccess] fires. Answers stay
      * ungrounded until [setRagEnabled] is called.
@@ -446,6 +442,17 @@ object MainFendAI {
     fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
         ensureInitialized()
         fendAIManager.loadKnowledge(path, onSuccess, onError)
+    }
+
+    /** Loads a text or PDF knowledge source. PDF extraction requires [context]. */
+    fun loadKnowledge(
+        path: String,
+        context: Context,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
+        ensureInitialized()
+        fendAIManager.loadKnowledge(path, context, onSuccess, onError)
     }
 
     /**

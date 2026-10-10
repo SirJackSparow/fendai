@@ -94,36 +94,5 @@ interface RegisterFendAI {
      */
     fun usePinalties(): Boolean
 
-    /**
-     * Defines the file format or model architecture type required for this configuration.
-     *
-     * This method specifies the expected extension or internal structure of the model file
-     * (e.g., GGUF, TFLite) that this configuration is intended to support. This allows
-     * the system to validate that the loaded model file matches the implementation's expectations
-     * before attempting to initialize the engine.
-     *
-     * Note: The function signature currently returns [Unit] (void), implying this might be intended
-     * to perform a side-effect (like validation) or is a placeholder for a return type (e.g., an Enum or String)
-     * that identifies the file type.
-     *
-     * for noe only 2 gguf and tflite
-     */
-    fun typeOfFile(): TYPE_OF_FILE
-
-
     fun maxResponseTokens() : Int?
-}
-
-/**
- * Enumerates the supported file formats and model architectures for the FendAI system.
- *
- * This enum is used by [RegisterFendAI.typeOfFile] to specify which underlying engine
- * or loader should be used for a given model configuration.
- *
- * @property GGUF Represents the GGUF (GPT-Generated Unified Format) file format, commonly used with llama.cpp.
- * @property TFLITE Represents the TensorFlow Lite file format, optimized for on-device machine learning.
- */
-enum class TYPE_OF_FILE {
-    GGUF,
-    TFLITE
 }

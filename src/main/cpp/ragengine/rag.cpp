@@ -141,6 +141,12 @@ namespace fendai::rag {
 		const std::filesystem::path root(path);
 		if (!std::filesystem::exists(root)) return 0;
 		auto loadFile = [this](const std::filesystem::path& file) {
+			std::string extension = file.extension().string();
+			std::transform(extension.begin(), extension.end(), extension.begin(),
+					[](unsigned char character) {
+						return static_cast<char>(std::tolower(character));
+					});
+			if (extension == ".pdf") return;
 			std::ifstream input(file, std::ios::in | std::ios::binary);
 			if (!input) return;
 			addChunks(*this, file.string(), input);

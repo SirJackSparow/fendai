@@ -1,8 +1,27 @@
 package com.dg.fendai.core
 
+import android.content.Context
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
+import java.io.File
+
 /** Offline document retrieval for grounding a [LlamaEngine] prompt. */
 class RagEngine : AutoCloseable {
     private var nativeHandle = create()
+
+    companion object {
+        @Volatile
+        private var pdfBoxInitialized = false
+
+        @Synchronized
+        private fun initializePdfBox(context: Context) {
+            if (!pdfBoxInitialized) {
+                PDFBoxResourceLoader.init(context.applicationContext)
+                pdfBoxInitialized = true
+            }
+        }
+    }
 
     /** Removes every indexed chunk. */
     fun clear() {
@@ -10,10 +29,44 @@ class RagEngine : AutoCloseable {
         clear(nativeHandle)
     }
 
-    /** Loads one file or recursively loads all files in a directory. Returns chunk count. */
-    fun load(path: String): Int {
+    /** Loads text files recursively, or one file. Returns chunk count. */
+    fun load(path: String): Int = load(path, null)
+
+    /**
+     * Loads text files and text-based PDFs. An Android context is required only if [path]
+     * contains a PDF.
+     */
+    fun load(path: String, context: Context?): Int {
         checkOpen()
-        return loadPath(nativeHandle, path)
+        val root = File(path)
+        require(root.exists() && (root.isFile || root.isDirectory)) {
+            "Knowledge path is not a file or directory: $path"
+        }
+
+        val pdfFiles = when {
+            root.isFile && root.extension.equals("pdf", ignoreCase = true) -> listOf(root)
+            root.isDirectory -> root.walkTopDown()
+                .filter { it.isFile && it.extension.equals("pdf", ignoreCase = true) }
+                .toList()
+            else -> emptyList()
+        }
+        if (pdfFiles.isNotEmpty()) {
+            initializePdfBox(requireNotNull(context) {
+                "Android Context is required to index PDF files"
+            })
+        }
+
+        loadPath(nativeHandle, path)
+        pdfFiles.forEach { pdf ->
+            val text = PDDocument.load(pdf).use { document ->
+                PDFTextStripper().getText(document)
+            }
+            require(text.isNotBlank()) {
+                "PDF contains no extractable text (scanned PDFs require OCR): ${pdf.name}"
+            }
+            addDocument(pdf.absolutePath, text)
+        }
+        return chunkCount
     }
 
     /** Adds an in-memory document. */

@@ -55,6 +55,14 @@ interface FendAIManager {
      */
     fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit)
 
+    /** Loads knowledge with an optional context required for PDF extraction. */
+    fun loadKnowledge(
+        path: String,
+        context: Context?,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) = loadKnowledge(path, onSuccess, onError)
+
     /** Adds one in-memory document to the current index. */
     fun addKnowledge(source: String, text: String)
 

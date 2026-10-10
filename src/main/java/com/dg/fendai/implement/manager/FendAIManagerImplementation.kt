@@ -217,6 +217,15 @@ class FendAIManagerImplementation : FendAIManager {
      * both native and blocking, so neither belongs on the caller's thread.
      */
     override fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
+        loadKnowledge(path, null, onSuccess, onError)
+    }
+
+    override fun loadKnowledge(
+        path: String,
+        context: Context?,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
         modelScope.launch {
             try {
                 val count = synchronized(knowledgeLoadLock) {
@@ -227,7 +236,7 @@ class FendAIManagerImplementation : FendAIManager {
 
                     val engine = RagEngine()
                     try {
-                        val loadedChunks = engine.load(path)
+                        val loadedChunks = engine.load(path, context)
                         synchronized(knowledgeLock) {
                             knowledge?.close()
                             knowledge = engine

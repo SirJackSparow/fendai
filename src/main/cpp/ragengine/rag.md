@@ -1,8 +1,8 @@
 
 # Fendai RAG engine
 
-`RagEngine` is an offline retrieval layer for `LlamaEngine`. It loads local text files,
-splits them into overlapping chunks, ranks chunks with a TF-IDF-style lexical score, and
+`RagEngine` is an offline retrieval layer for `LlamaEngine`. It loads local text files and
+text-based PDF files, splits them into overlapping chunks, ranks chunks with a TF-IDF-style lexical score, and
 builds a grounded prompt for llama.cpp. No network, database, or separate embedding model
 is required.
 
@@ -16,7 +16,7 @@ val llama = LlamaEngine()
 llama.load(modelPath)
 
 RagEngine().use { rag ->
-		val chunks = rag.load(filesDir.resolve("knowledge").absolutePath)
+		val chunks = rag.load(filesDir.resolve("knowledge").absolutePath, context)
 		check(chunks > 0) { "No readable documents were found" }
 
 		val question = "How do I reset the application?"
@@ -29,8 +29,20 @@ RagEngine().use { rag ->
 }
 ```
 
-The directory is searched recursively. Every regular file is read as UTF-8-compatible text;
-the source path is kept in each result so the model can identify where context came from.
+The directory is searched recursively. Text files are read as UTF-8-compatible text. PDFs are
+parsed for embedded text using PDFBox Android and require an Android `Context`; scanned/image-only
+PDFs are not OCRed and fail with an explanatory error. The source path is kept in each result so
+the model can identify where context came from. Pass an Android `Context` to `RagEngine.load()`
+when the file or directory contains PDFs. `MainFendAI.loadKnowledge` also has a context overload:
+
+```kotlin
+MainFendAI.loadKnowledge(
+        pdfFile.absolutePath,
+        context,
+        onSuccess = { chunks -> MainFendAI.setRagEnabled(true) },
+        onError = { e -> Log.e("RAG", "index failed", e) },
+)
+```
 For content that is already in memory, use:
 
 ```kotlin

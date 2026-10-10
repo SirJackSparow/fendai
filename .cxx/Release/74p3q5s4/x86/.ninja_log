@@ -1553,3 +1553,17 @@
 34	1370	1791593821773079215	CMakeFiles/llama_android.dir/ragengine/rag.cpp.o	929e0b8582ca00
 1370	2727	1791593822604538146	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libllama_android.so	8f50a4da124e8cd1
 0	11	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+1	12	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+19	470	1791605044909350650	CMakeFiles/ggufreader.dir/GGUFReader.cpp.o	28d7d86de6374d7f
+20	673	1791605045114538847	CMakeFiles/llama_android.dir/llama_android.cpp.o	383c31c9f6ac6238
+470	894	1791605045270637786	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libggufreader.so	7e1617c38d325a49
+20	924	1791605045365699596	CMakeFiles/llama_android.dir/LLMInference.cpp.o	bd8c5f5e2d25717e
+20	1192	1791605045626808411	CMakeFiles/llama_android.dir/ragengine/rag.cpp.o	929e0b8582ca00
+1192	2587	1791605046779089711	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libllama_android.so	8f50a4da124e8cd1
+0	9	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+1	17	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+0	10	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+1	66	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265
+55	3906	1791610070872454343	CMakeFiles/llama_android.dir/ragengine/rag.cpp.o	929e0b8582ca00
+3906	6769	1791610073072885076	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/build/intermediates/cxx/Release/74p3q5s4/obj/x86/libllama_android.so	8f50a4da124e8cd1
+1	25	0	/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai/.cxx/Release/74p3q5s4/x86/CMakeFiles/cmake.verify_globs	e1095fe9dd2ac265

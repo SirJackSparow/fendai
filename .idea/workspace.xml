@@ -6,13 +6,35 @@
   <component name="ChangeListManager">
     <list default="true" id="7a15be8b-5f7f-458b-a72e-40f31267ddd8" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../iospackage" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/KoinApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/KoinApplication.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android_v7a.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android_v7a.dir/llama_android.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/core/TFLiteMediaPipeEngine.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/RegisterFendAI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/RegisterFendAI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAITFLiteManager.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAITFLiteManagerImplementation.kt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
@@ -40,7 +62,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[PhysicalDevice::serial=1178d43d1122]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />

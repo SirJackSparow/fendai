@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.kotlin.reflect)
     implementation(libs.androidx.startup.runtime) // Or your Kotlin version
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
