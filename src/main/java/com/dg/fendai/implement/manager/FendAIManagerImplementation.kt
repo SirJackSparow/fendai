@@ -265,7 +265,7 @@ class FendAIManagerImplementation : FendAIManager {
     }
 
     override fun unLoadModel() {
-        instance.free()
+        instance.unloadModel()
     }
 
     companion object {
