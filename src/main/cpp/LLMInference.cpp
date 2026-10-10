@@ -19,6 +19,14 @@ static void llamaAndroidLog(ggml_log_level level, const char * text, void *) {
     __android_log_print(priority, TAG, "%s", text);
 }
 
+static void freeMessages(std::vector<llama_chat_message>& messages) {
+    for (const auto& message : messages) {
+        free(const_cast<char*>(message.role));
+        free(const_cast<char*>(message.content));
+    }
+    messages.clear();
+}
+
 
 //this is must order otherwise will error
 //// 1. PENALTIES (Optional - if you want to prevent repetition)
@@ -98,7 +106,7 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     }
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.n_ctx = contextSize;
-    ctx_params.n_batch = std::min<long>(contextSize, 512);
+    ctx_params.n_batch = std::min<long>(contextSize, 256);
     ctx_params.n_threads = nThreads;
     ctx_params.no_perf = true; // disable performance metrics
 
@@ -551,12 +559,7 @@ LLMInference::stopCompletion() {
 }
 
 LLMInference::~LLMInference() {
-    // free memory held by the message text in messages
-    // (as we had used strdup() to create a malloc'ed copy)
-    for (llama_chat_message &message: _messages) {
-        free(const_cast<char *>(message.role));
-        free(const_cast<char *>(message.content));
-    }
+    freeMessages(_messages);
     if (_mtmdCtx) mtmd_free(_mtmdCtx);        // ← ADD
     llama_free(_ctx);
     llama_model_free(_model);
@@ -574,7 +577,7 @@ void LLMInference::clearChatHistory() {
         _nCtxUsed = 0;
         _prevLen = 0;
         _imageMode = false;                    // ← ADD
-        _messages.clear();
+        freeMessages(_messages);
         _response.clear();
         _cacheResponseTokens.clear();
         _formattedMessages.clear();
@@ -597,6 +600,10 @@ void LLMInference::clearMemoryOnly() {
 void LLMInference::removeLastMessages(int count) {
     if (count > 0 && !_messages.empty()) {
         int toRemove = std::min(count, (int)_messages.size());
+        for (auto message = _messages.end() - toRemove; message != _messages.end(); ++message) {
+            free(const_cast<char*>(message->role));
+            free(const_cast<char*>(message->content));
+        }
         _messages.erase(_messages.end() - toRemove, _messages.end());
     }
 }
@@ -618,6 +625,10 @@ void LLMInference::manageContext() {
             }
 
             if (_messages.size() > removeStart + 2) {
+                for (size_t index = removeStart; index < removeStart + 2; ++index) {
+                    free(const_cast<char*>(_messages[index].role));
+                    free(const_cast<char*>(_messages[index].content));
+                }
                 _messages.erase(
                         _messages.begin() + removeStart,
                         _messages.begin() + removeStart + 2

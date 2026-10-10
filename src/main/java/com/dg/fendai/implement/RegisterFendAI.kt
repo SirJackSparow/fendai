@@ -32,7 +32,8 @@ interface RegisterFendAI {
      * A larger context size allows the model to "remember" more conversation history or process larger
      * blocks of text, but requires more memory.
      *
-     * @return The context size limit as a [Long], or 0L if not specifically configured (which may imply using the model's default).
+     * @return The context size limit as a [Long], or 0L if not specifically configured. Without
+     * an explicit value, FendAI uses the model's context size up to 4096 tokens to limit memory use.
      */
     fun contextSize(): Long?
 

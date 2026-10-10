@@ -7,6 +7,14 @@
 #include <thread>
 #include <chrono>
 
+/**
+ * Loads a local LLM model and creates a native LlamaEngine instance.
+ *
+ * Called from Java/Kotlin to initialize the underlying LLMInference object with model
+ * parameters such as an inference context size, sampling settings, chat template, and
+ * GPU layer configuration. Returns the native pointer that will be used by the rest of
+ * the JNI bridge methods.
+ */
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring modelPath,
         jfloat minP,
@@ -37,6 +45,13 @@ Java_com_dg_fendai_core_LlamaEngine_loadModel(JNIEnv *env, jobject thiz, jstring
 }
 
 
+/**
+ * Releases the native model object and stops generation before deletion.
+ *
+ * This is the counterpart to loadModel(). It tells the inference engine to stop any
+ * ongoing generation, waits briefly for the thread to exit, and destroys the native
+ * object to free memory.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_freeModel(JNIEnv *env, jobject thiz, jlong nativePtr) {
     if (nativePtr != 0) {
@@ -47,6 +62,12 @@ Java_com_dg_fendai_core_LlamaEngine_freeModel(JNIEnv *env, jobject thiz, jlong n
     }
 }
 
+/**
+ * Adds a single message to the model's chat history.
+ *
+ * This bridges a Java/Kotlin user or assistant message into the native chat buffer so
+ * later completion calls can consider the conversation context.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_addChatMessage(JNIEnv *env, jobject thiz, jlong modelPtr,
         jstring message,
@@ -62,6 +83,11 @@ Java_com_dg_fendai_core_LlamaEngine_addChatMessage(JNIEnv *env, jobject thiz, jl
 
 }
 
+/**
+ * Returns the model's measured response generation speed.
+ *
+ * Used by the Android app to display generation throughput or analyze performance.
+ */
 extern "C" JNIEXPORT jfloat JNICALL
 Java_com_dg_fendai_core_LlamaEngine_getResponseGenerationSpeed(JNIEnv *env, jobject thiz,
         jlong modelPtr) {
@@ -69,12 +95,24 @@ Java_com_dg_fendai_core_LlamaEngine_getResponseGenerationSpeed(JNIEnv *env, jobj
     return llmInference->getResponseGenerationTime();
 }
 
+/**
+ * Returns the number of context tokens currently in use.
+ *
+ * This lets the app monitor how much of the model's context window is occupied by
+ * prompts and conversation history.
+ */
 extern "C" JNIEXPORT jint JNICALL
 Java_com_dg_fendai_core_LlamaEngine_getContextSizeUsed(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     return llmInference->getContextSizeUsed();
 }
 
+/**
+ * Closes the model handle and destroys the native inference object.
+ *
+ * This is a simpler cleanup method used by the Java layer when it wants to release the
+ * model without the extra stop-generation wait used by freeModel().
+ */
 extern "C" JNIEXPORT jint JNICALL
 Java_com_dg_fendai_core_LlamaEngine_close(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
@@ -82,6 +120,12 @@ Java_com_dg_fendai_core_LlamaEngine_close(JNIEnv *env, jobject thiz, jlong model
     return 0;
 }
 
+/**
+ * Starts a text generation run for a prompt.
+ *
+ * The native model receives the UTF-8 prompt string and begins generating output using
+ * the current model state and chat settings.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_startCompletion(JNIEnv *env, jobject thiz, jlong modelPtr,
         jstring prompt) {
@@ -92,6 +136,12 @@ Java_com_dg_fendai_core_LlamaEngine_startCompletion(JNIEnv *env, jobject thiz, j
     env->ReleaseStringUTFChars(prompt, promptCstr);
 }
 
+/**
+ * Waits for the running generation to finish and returns the generated text.
+ *
+ * This is the blocking read step that the Java layer uses to receive the model output
+ * after startCompletion() has kicked off generation.
+ */
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_dg_fendai_core_LlamaEngine_completionLoop(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
@@ -104,12 +154,24 @@ Java_com_dg_fendai_core_LlamaEngine_completionLoop(JNIEnv *env, jobject thiz, jl
     }
 }
 
+/**
+ * Requests an immediate stop to the active generation.
+ *
+ * Used when the app cancels the current generation or the user wants to interrupt the
+ * model before it finishes the response.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_stopCompletion(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     llmInference->stopCompletion();
 }
 
+/**
+ * Clears the entire conversation history stored in the model instance.
+ *
+ * This resets the chat context so the next generation starts from a clean conversation
+ * instead of the previous messages.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_clearChatHistory(JNIEnv *env, jobject thiz, jlong context_pointer) {
     auto *inference = reinterpret_cast<LLMInference *>(context_pointer);
@@ -118,6 +180,12 @@ Java_com_dg_fendai_core_LlamaEngine_clearChatHistory(JNIEnv *env, jobject thiz, 
     }
 }
 
+/**
+ * Clears only the memory state while preserving the rest of the model configuration.
+ *
+ * This is useful when the app wants to reset the active conversation memory without
+ * reloading the whole model or reinitializing the engine.
+ */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_clearMemoryOnly(
@@ -131,6 +199,12 @@ Java_com_dg_fendai_core_LlamaEngine_clearMemoryOnly(
     }
 }
 
+/**
+ * Removes the most recent chat messages from the conversation history.
+ *
+ * The Java layer can use this to trim earlier conversation turns and keep the prompt
+ * within the model context window.
+ */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_removeLastMessages(
@@ -145,6 +219,12 @@ Java_com_dg_fendai_core_LlamaEngine_removeLastMessages(
     }
 }
 
+/**
+ * Returns how many messages are currently stored in the chat history.
+ *
+ * This helps the app decide whether the conversation is empty, whether it should trim
+ * old messages, or whether it can safely continue generation.
+ */
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_dg_fendai_core_LlamaEngine_getMessageCount(
@@ -159,6 +239,12 @@ Java_com_dg_fendai_core_LlamaEngine_getMessageCount(
     return 0;
 }
 
+/**
+ * Prints or logs the full conversation history for debugging.
+ *
+ * This is a diagnostic helper used by native code to inspect the model's stored chat
+ * messages when troubleshooting generation or context issues.
+ */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_getLogAllHistory(
@@ -170,7 +256,12 @@ Java_com_dg_fendai_core_LlamaEngine_getLogAllHistory(
     llmInference->getLogAllHistory();
 }
 
-// ← ADD: load mmproj for vision support 4 mart
+/**
+ * Loads a multimodal projector (.mmproj) model for vision-aware inference.
+ *
+ * This enables the engine to accept image inputs and combine them with text prompts for
+ * multimodal generation support.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_loadMmproj(JNIEnv *env, jobject thiz, jlong modelPtr,
         jstring mmprojPath) {
@@ -185,7 +276,12 @@ Java_com_dg_fendai_core_LlamaEngine_loadMmproj(JNIEnv *env, jobject thiz, jlong 
     env->ReleaseStringUTFChars(mmprojPath, mmprojPathCstr);
 }
 
-// ← ADD: start completion with image 4 mart
+/**
+ * Starts generation using both a text prompt and an image payload.
+ *
+ * This is the multimodal entry point for vision-capable models: the app passes the
+ * prompt text and raw image bytes, and the engine interprets them as a combined input.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_startCompletionWithImage(JNIEnv *env, jobject thiz,
         jlong modelPtr, jstring prompt, jbyteArray imageBytes) {
@@ -207,7 +303,12 @@ Java_com_dg_fendai_core_LlamaEngine_startCompletionWithImage(JNIEnv *env, jobjec
     env->ReleaseByteArrayElements(imageBytes, imageBytesPtr, JNI_ABORT);
 }
 
-// ← ADD: free mmproj 4 mart
+/**
+ * Releases the multimodal projector resources loaded for vision support.
+ *
+ * This frees memory used by the mmproj model once the app no longer needs image-based
+ * generation for the current engine instance.
+ */
 extern "C" JNIEXPORT void JNICALL
 Java_com_dg_fendai_core_LlamaEngine_freeMmproj(JNIEnv *env, jobject thiz, jlong modelPtr) {
     auto *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
