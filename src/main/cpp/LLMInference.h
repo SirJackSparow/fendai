@@ -49,6 +49,7 @@ class LLMInference {
     bool _isValidUtf8(const char* response);
 
     int _maxResponseTokens;
+    int _configuredMaxResponseTokens;
 
     //neue 12 Feb 2026
     // Max tokens per response to prevent infinite generation

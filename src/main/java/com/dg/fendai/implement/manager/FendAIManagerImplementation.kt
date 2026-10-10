@@ -36,6 +36,13 @@ class FendAIManagerImplementation : FendAIManager {
     private var ragEnabled = false
     private var ragTopK = DEFAULT_RAG_TOP_K
     private var ragMaxContextCharacters = DEFAULT_RAG_MAX_CONTEXT_CHARACTERS
+    private var ragEmbeddingModelPath: String? = null
+    private var ragStopWords: Set<String>? = null
+
+    private data class GroundedRequest(
+        val prompt: String,
+        val allowedCitationIds: Set<Int>,
+    )
 
     /**
      * Sends a message to the Llama model and retrieves the complete response.
@@ -54,20 +61,31 @@ class FendAIManagerImplementation : FendAIManager {
      * @return A [String] containing the full response from the model. If an error or cancellation
      * occurs, it may return a partial response or an error message appended to the result.
      */
-    override suspend fun sendMessage(message: String): String = sendMessage(message, false)
+    override suspend fun sendMessage(message: String): String =
+        sendMessage(message, RagEngine.AnswerMode.DOCUMENT_ONLY, false)
 
-    /**
-     * Sends the original question when flexible fallback is enabled and no chunks match.
-     *
-     * @param message The message string to be sent to the model.
-     * @param allowGeneralKnowledgeWhenNoMatch Whether an unmatched query may use model knowledge.
-     */
     override suspend fun sendMessage(
         message: String,
         allowGeneralKnowledgeWhenNoMatch: Boolean,
+    ): String = sendMessage(
+        message,
+        RagEngine.AnswerMode.DOCUMENT_ONLY,
+        allowGeneralKnowledgeWhenNoMatch,
+    )
+
+    override suspend fun sendMessage(
+        message: String,
+        answerMode: RagEngine.AnswerMode,
+    ): String = sendMessage(message, answerMode, false)
+
+    override suspend fun sendMessage(
+        message: String,
+        answerMode: RagEngine.AnswerMode,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
     ): String = coroutineScope {
         val result = StringBuilder()
-        val prompt = groundedPrompt(message, allowGeneralKnowledgeWhenNoMatch) ?: message
+        val grounded = groundedPrompt(message, allowGeneralKnowledgeWhenNoMatch, answerMode)
+        val prompt = grounded?.prompt ?: message
 
         try {
             instance.getResponseAsFlow(prompt)
@@ -85,29 +103,48 @@ class FendAIManagerImplementation : FendAIManager {
             println(e)
             return@coroutineScope result.toString()
         }
-        result.toString()
+        grounded?.let { validateCitations(result.toString(), it.allowedCitationIds) }
+            ?: result.toString()
     }
 
     /**
      * Returns the grounded prompt for [query], or null when retrieval is off, nothing is indexed,
      * or retrieval failed. Native calls are blocking, so keep this off the main thread.
      */
-    private fun groundedPrompt(query: String, allowGeneralKnowledgeWhenNoMatch: Boolean): String? =
+    private fun groundedPrompt(
+        query: String,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
+        answerMode: RagEngine.AnswerMode,
+    ): GroundedRequest? =
         synchronized(knowledgeLock) {
         if (!ragEnabled) return@synchronized null
         val engine = knowledge ?: return@synchronized null
         if (ragTopK <= 0) return@synchronized null
         try {
-            engine.buildPrompt(
+            val prompt = engine.buildPrompt(
                 query,
                 ragTopK,
                 ragMaxContextCharacters,
                 allowGeneralKnowledgeWhenNoMatch,
+                answerMode,
             )
+            val allowedCitationIds = Regex("(?m)^\\[(\\d+)] \\[Source:")
+                .findAll(prompt)
+                .mapNotNull { it.groupValues[1].toIntOrNull() }
+                .toSet()
+            GroundedRequest(prompt, allowedCitationIds)
         } catch (e: Exception) {
             Log.e("FendAIManager", "RAG grounding failed, answering without context", e)
+            if (ragEmbeddingModelPath != null) throw e
             null
         }
+    }
+
+    private fun validateCitations(answer: String, allowedCitationIds: Set<Int>): String {
+        val validation = RagCitationValidator.validate(answer, allowedCitationIds)
+        val warning = validation.warning ?: return validation.answer
+        Log.w("FendAIManager", warning)
+        return if (validation.answer.isBlank()) warning else "${validation.answer}\n\n[$warning]"
     }
 
     /**
@@ -217,12 +254,31 @@ class FendAIManagerImplementation : FendAIManager {
      * both native and blocking, so neither belongs on the caller's thread.
      */
     override fun loadKnowledge(path: String, onSuccess: (Int) -> Unit, onError: (Exception) -> Unit) {
-        loadKnowledge(path, null, onSuccess, onError)
+        loadKnowledge(path, null, RagEngine.ChunkingOptions(), onSuccess, onError)
+    }
+
+    override fun loadKnowledge(
+        path: String,
+        chunkingOptions: RagEngine.ChunkingOptions,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
+        loadKnowledge(path, null, chunkingOptions, onSuccess, onError)
     }
 
     override fun loadKnowledge(
         path: String,
         context: Context?,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
+        loadKnowledge(path, context, RagEngine.ChunkingOptions(), onSuccess, onError)
+    }
+
+    override fun loadKnowledge(
+        path: String,
+        context: Context?,
+        chunkingOptions: RagEngine.ChunkingOptions,
         onSuccess: (Int) -> Unit,
         onError: (Exception) -> Unit,
     ) {
@@ -236,7 +292,13 @@ class FendAIManagerImplementation : FendAIManager {
 
                     val engine = RagEngine()
                     try {
-                        val loadedChunks = engine.load(path, context)
+                        val embeddingModelPath = synchronized(knowledgeLock) {
+                            ragEmbeddingModelPath
+                        }
+                        embeddingModelPath?.let(engine::loadEmbeddingModel)
+                        val stopWords = synchronized(knowledgeLock) { ragStopWords }
+                        stopWords?.let(engine::setStopWords)
+                        val loadedChunks = engine.load(path, context, chunkingOptions)
                         synchronized(knowledgeLock) {
                             knowledge?.close()
                             knowledge = engine
@@ -258,8 +320,74 @@ class FendAIManagerImplementation : FendAIManager {
     }
 
     override fun addKnowledge(source: String, text: String) = synchronized(knowledgeLock) {
-        val engine = knowledge ?: RagEngine().also { knowledge = it }
+        val engine = knowledge ?: RagEngine().also { created ->
+            try {
+                ragEmbeddingModelPath?.let(created::loadEmbeddingModel)
+                ragStopWords?.let(created::setStopWords)
+                knowledge = created
+            } catch (e: Exception) {
+                created.close()
+                throw e
+            }
+        }
         engine.addDocument(source, text)
+    }
+
+    override fun setRagEmbeddingModel(
+        modelPath: String,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit,
+    ) {
+        modelScope.launch {
+            try {
+                synchronized(knowledgeLoadLock) {
+                    synchronized(knowledgeLock) {
+                        val engine = knowledge ?: RagEngine()
+                        try {
+                            engine.loadEmbeddingModel(modelPath)
+                            knowledge = engine
+                            ragEmbeddingModelPath = modelPath
+                        } catch (e: Exception) {
+                            if (knowledge !== engine) engine.close()
+                            throw e
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) { onSuccess() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("FendAIManager", "Failed to load RAG embedding model: $modelPath", e)
+                withContext(Dispatchers.Main) { onError(e) }
+            }
+        }
+    }
+
+    override fun clearRagEmbeddingModel() {
+        synchronized(knowledgeLoadLock) {
+            synchronized(knowledgeLock) {
+                knowledge?.clearEmbeddingModel()
+                ragEmbeddingModelPath = null
+            }
+        }
+    }
+
+    override fun setRagStopWords(stopWords: Set<String>) {
+        synchronized(knowledgeLoadLock) {
+            synchronized(knowledgeLock) {
+                knowledge?.setStopWords(stopWords)
+                ragStopWords = stopWords.toSet()
+            }
+        }
+    }
+
+    override fun resetRagStopWords() {
+        synchronized(knowledgeLoadLock) {
+            synchronized(knowledgeLock) {
+                knowledge?.resetStopWords()
+                ragStopWords = null
+            }
+        }
     }
 
     override fun searchKnowledge(query: String, topK: Int): List<RagEngine.Result> =

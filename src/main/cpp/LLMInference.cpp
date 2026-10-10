@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <utility>
 
 #define TAG "[Fendai-Cpp]"
 #define LOGi(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
@@ -195,6 +196,7 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     _messages.clear();
     _maxResponseTokens = maxResponseTokens;
+    _configuredMaxResponseTokens = maxResponseTokens;
 
     if (chatTemplate == nullptr) {
         _chatTemplate = llama_model_chat_template(_model, nullptr);
@@ -253,6 +255,56 @@ LLMInference::startCompletion(const char *query) {
     }
     std::string prompt(_formattedMessages.begin() + _prevLen, _formattedMessages.begin() + newLen);
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
+
+    const uint32_t contextSize = llama_n_ctx(_ctx);
+    uint32_t usedTokens = llama_memory_seq_pos_max(llama_get_memory(_ctx), 0) + 1;
+    const int configuredResponseTokens = std::max(1, _configuredMaxResponseTokens);
+    const size_t responseReserve = static_cast<size_t>(
+            std::min(configuredResponseTokens, static_cast<int>(contextSize / 4)));
+    if (_storeChats &&
+            static_cast<size_t>(usedTokens) + _promptTokens.size() + responseReserve > contextSize) {
+        std::vector<llama_chat_message> retainedMessages;
+        const bool hasSystemMessage = !_messages.empty() &&
+                std::string(_messages.front().role) == "system";
+        if (hasSystemMessage) retainedMessages.push_back(_messages.front());
+        retainedMessages.push_back(_messages.back());
+
+        for (size_t index = 0; index < _messages.size(); ++index) {
+            if ((hasSystemMessage && index == 0) || index == _messages.size() - 1) continue;
+            free(const_cast<char*>(_messages[index].role));
+            free(const_cast<char*>(_messages[index].content));
+        }
+        _messages = std::move(retainedMessages);
+
+        llama_memory_clear(llama_get_memory(_ctx), true);
+        _nCtxUsed = 0;
+        _prevLen = 0;
+
+        newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
+                _formattedMessages.data(), _formattedMessages.size());
+        if (newLen > static_cast<int>(_formattedMessages.size())) {
+            _formattedMessages.resize(newLen);
+            newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(),
+                    true, _formattedMessages.data(), _formattedMessages.size());
+        }
+        if (newLen < 0) {
+            throw std::runtime_error(
+                    "llama_chat_apply_template() in LLMInference::startCompletion() failed");
+        }
+        prompt.assign(_formattedMessages.begin(), _formattedMessages.begin() + newLen);
+        _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
+        usedTokens = 0;
+    }
+
+    const size_t availableResponseTokens = contextSize > usedTokens + _promptTokens.size()
+            ? contextSize - usedTokens - _promptTokens.size()
+            : 0;
+    if (availableResponseTokens == 0) {
+        throw std::runtime_error(
+                "Prompt exceeds the model context window; reduce the input or retrieved RAG context");
+    }
+    _maxResponseTokens = static_cast<int>(std::min(
+            static_cast<size_t>(configuredResponseTokens), availableResponseTokens));
 
     // create a llama_batch containing a single sequence
     // see llama_batch_init for more details

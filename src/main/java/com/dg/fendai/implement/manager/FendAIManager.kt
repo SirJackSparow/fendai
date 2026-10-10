@@ -12,6 +12,17 @@ interface FendAIManager {
     suspend fun sendMessage(message: String, allowGeneralKnowledgeWhenNoMatch: Boolean): String =
         sendMessage(message)
 
+    /** Sends a message with an explicit RAG answer policy. */
+    suspend fun sendMessage(message: String, answerMode: RagEngine.AnswerMode): String =
+        sendMessage(message)
+
+    /** Sends a message with answer policy and legacy no-match fallback control. */
+    suspend fun sendMessage(
+        message: String,
+        answerMode: RagEngine.AnswerMode,
+        allowGeneralKnowledgeWhenNoMatch: Boolean,
+    ): String = sendMessage(message, answerMode)
+
     fun addUserMessage(message: String)
     fun loadModel(modelPath: String,
              params: LlamaEngine.InferenceParams = LlamaEngine.InferenceParams(),
@@ -63,8 +74,41 @@ interface FendAIManager {
         onError: (Exception) -> Unit,
     ) = loadKnowledge(path, onSuccess, onError)
 
+    /** Loads knowledge using the requested word-based chunk size and overlap. */
+    fun loadKnowledge(
+        path: String,
+        context: Context?,
+        chunkingOptions: RagEngine.ChunkingOptions,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) = loadKnowledge(path, context, onSuccess, onError)
+
+    /** Loads non-PDF knowledge using custom word-based chunking options. */
+    fun loadKnowledge(
+        path: String,
+        chunkingOptions: RagEngine.ChunkingOptions,
+        onSuccess: (Int) -> Unit,
+        onError: (Exception) -> Unit,
+    ) = loadKnowledge(path, onSuccess, onError)
+
     /** Adds one in-memory document to the current index. */
     fun addKnowledge(source: String, text: String)
+
+    /** Loads a local llama.cpp embedding GGUF model for hybrid semantic and BM25 search. */
+    fun setRagEmbeddingModel(
+        modelPath: String,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit,
+    )
+
+    /** Disables semantic search and returns the current index to BM25 retrieval. */
+    fun clearRagEmbeddingModel()
+
+    /** Replaces built-in English stopwords for retrieval; an empty set disables filtering. */
+    fun setRagStopWords(stopWords: Set<String>)
+
+    /** Restores the built-in English stopword list for retrieval. */
+    fun resetRagStopWords()
 
     /** Returns the best matching chunks, strongest first. Empty when nothing is indexed. */
     fun searchKnowledge(query: String, topK: Int = 4): List<RagEngine.Result>
