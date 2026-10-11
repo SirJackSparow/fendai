@@ -140,6 +140,18 @@ class FendAIManagerImplementation : FendAIManager {
         }
     }
 
+    /**
+     * The helper method validateCitations in  FendAIManagerImplementation.kt is responsible for verifying and post-processing citations generated during RAG (Retrieval-Augmented Generation) grounding.
+     * 1. **Validation Check**:
+     *    It delegates the actual validation logic to [`RagCitationValidator.validate(...)`](method://com.dg.fendai.implement.manager.RagCitationValidator#validate), which extracts citation brackets (e.g. `[1]`, `[2]`) from the generated model answer (`answer`) and checks them against the set of valid/allowed citation IDs (`allowedCitationIds`).
+     *
+     * 2. **Handling Warnings**:
+     *    - **No Warning (`warning == null`)**: If all citations are valid (or none needed when empty), it returns the original answer unmodified (`validation.answer`).
+     *    - **With Warning**: If there are invalid citation IDs or missing required citations:
+     *      - It logs the warning using `Log.w(...)` under the `"FendAIManager"` tag.
+     *      - If the model's answer is completely blank, it returns the warning text directly.
+     *      - Otherwise, it appends the grounding warning to the bottom of the answer enclosed in brackets (`\n\n[$warning]`).
+     */
     private fun validateCitations(answer: String, allowedCitationIds: Set<Int>): String {
         val validation = RagCitationValidator.validate(answer, allowedCitationIds)
         val warning = validation.warning ?: return validation.answer

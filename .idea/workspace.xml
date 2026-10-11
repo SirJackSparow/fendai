@@ -11,30 +11,21 @@
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android_v7a.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/CMakeFiles/llama_android_v7a.dir/llama_android.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/llama_android.dir/llama_android.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/CMakeFiles/llama_android.dir/llama_android.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/core/TFLiteMediaPipeEngine.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/RegisterFendAI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/RegisterFendAI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAITFLiteManager.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAITFLiteManagerImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/MainFendAI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/MainFendAI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAIManagerImplementation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAIManagerImplementation.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
@@ -62,7 +53,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[PhysicalDevice::serial=1178d43d1122]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -81,7 +72,7 @@
     </system>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
     <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -103,30 +94,31 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.app.executor": "Run",
-    "Android App.main.executor": "Run",
-    "CidrDebugProfileConversion": "true",
-    "Gradle.Upgrade Gradle wrapper.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "castro-alpha-2",
-    "implementationPlan.dismissed.588dfd7e-9429-41c7-b3f7-87c7cff4abc8": "true",
-    "implementationPlan.dismissed.60f61207-2b8e-4e5b-8858-472389962258": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai",
-    "settings.editor.selected.configurable": "preferences.keymap",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;Android App.main.executor&quot;: &quot;Run&quot;,
+    &quot;CidrDebugProfileConversion&quot;: &quot;true&quot;,
+    &quot;Gradle.RagCitationValidatorTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;llama__V__1.2&quot;,
+    &quot;implementationPlan.dismissed.588dfd7e-9429-41c7-b3f7-87c7cff4abc8&quot;: &quot;true&quot;,
+    &quot;implementationPlan.dismissed.60f61207-2b8e-4e5b-8858-472389962258&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Android App.main">
     <configuration name="androidTest" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="ChatAndromedax.app.androidTest" />
@@ -392,6 +384,38 @@
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="RagCitationValidatorTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/.." />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":fendai:testDebugUnitTest" />
+            <option value="--tests" />
+            <option value="&quot;com.dg.fendai.RagCitationValidatorTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.RagCitationValidatorTest" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

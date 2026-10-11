@@ -603,26 +603,11 @@ object MainFendAI {
         fendAIManager.releaseKnowledge()
     }
 
-
     /**
-     * TFLite manager
+     * uninstall model
      */
-
-//    fun uploadFileTFLite(modelPath: String, context: Context, params: InferenceTFParams) {
-//        val fendAITFLiteManager: FendAITFLiteManager = FendAITFLiteManagerImplementation(context)
-//        fendAITFLiteManager.uploadFileTFLite(
-//            router.prompt ?: "",
-//            model = modelPath,
-//            params = params
-//        )
-//    }
-//
-//    fun addUserMessageTfLite(context: Context, message: String, onResponse: (String) -> Unit) {
-//        val fendAITFLiteManager: FendAITFLiteManager =
-//            FendAITFLiteManagerImplementation(context = context)
-//        fendAITFLiteManager.sendMessage(
-//            message = ChatMessage(role = Role.USER, message),
-//            onComplete = onResponse
-//        )
-//    }
+    fun uninstallModel() {
+        ensureInitialized()
+        fendAIManager.unLoadModel()
+    }
 }

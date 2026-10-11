@@ -75,7 +75,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.dg.fendai"     // group for Maven coordinate
             artifactId = "fendai"     // artifact name
-            version = "1.1.0rag"            // version tag
+            version = "1.1.1rag"            // version tag
 
             afterEvaluate {
                 // Ensure the component is available before attempting to use it
