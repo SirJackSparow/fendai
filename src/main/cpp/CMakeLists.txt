@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("llama_android")
 
-set(LLAMA_DIR_RELATIVE "../../../llama.cpp")
+set(LLAMA_DIR_RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/../../../llama.cpp")
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 
 set(GGML_DIR ${LLAMA_DIR}/ggml)

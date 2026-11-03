@@ -1,122 +1,109 @@
-* FENDAI local AI
+# Fendai SDK (`:fendai`)
 
-- Basic Func
-  
+Fendai is an Android SDK/Library for running on-device LLM inference, chat, and Retrieval-Augmented Generation (RAG) powered by [llama.cpp](https://github.com/ggml-org/llama.cpp).
 
-- New feature
+---
 
-# Chat History Management Functions - Simple Guide
+## Installation & Integration
+
+### Adding as a Dependency
+In your app's `build.gradle.kts`:
+```kotlin
+dependencies {
+    implementation(project(":fendai"))
+}
+```
+
+Or via Maven / JitPack (when published):
+```kotlin
+dependencies {
+    implementation("com.dg.fendai:fendai:1.1.1rag")
+}
+```
+
+---
+
+## Getting Started
+
+### 1. Loading a Model
+Initialize `LlamaEngine` and load your `.gguf` model file:
+
+```kotlin
+val llamaEngine = LlamaEngine()
+
+lifecycleScope.launch(Dispatchers.IO) {
+    val modelPath = File(context.filesDir, "model.gguf").absolutePath
+    llamaEngine.loadModel(
+        modelPath = modelPath,
+        minP = 0.05f,
+        temperature = 0.7f,
+        storeChats = true,
+        contextSize = 2048
+    )
+}
+```
+
+### 2. Generating Completions & Chat
+```kotlin
+// Add user message
+llamaEngine.addChatMessage("Hello!", "user")
+
+// Start generation
+llamaEngine.startCompletion("Hello!")
+
+// Stream or retrieve response chunks
+val responseBuilder = StringBuilder()
+while (true) {
+    val chunk = llamaEngine.completionLoop()
+    if (chunk.isEmpty()) break
+    responseBuilder.append(chunk)
+}
+val finalResponse = responseBuilder.toString()
+```
+
+---
+
+# Chat History & Memory Management Guide
 
 ## Overview
-These functions help you manage chat history in your LlamaEngine Android app.
+These functions help you manage chat history and model memory in your Fendai-powered Android app.
 
 ---
 
-## Functions
+## Core Functions
 
 ### 1. `clearAllHistory()`
-
-**What it does:**
 Deletes everything - all messages and memory. Like starting a brand new conversation.
-
-**When to use:**
-- "New Chat" button
-- User wants to start over completely
-
-**Example:**
 ```kotlin
-// User clicks "New Chat" button
 btnNewChat.setOnClickListener {
-    llamaEngine.clearAllHistory()  // Delete everything
-    chatMessages.clear()            // Also clear your UI list
+    llamaEngine.clearAllHistory()  
+    chatMessages.clear()           
 }
 ```
-
-**What gets deleted:**
-- ✅ All chat messages (user + assistant)
-- ✅ Model's memory
-- ✅ Everything
-
----
 
 ### 2. `clearMemory()`
-
-**What it does:**
-Clears the model's memory but keeps your chat messages for viewing.
-
-**When to use:**
-- Memory is full but you want to see old messages
-- Need to free up space
-
-**Example:**
+Clears the model's context memory while keeping your chat messages visible for viewing.
 ```kotlin
-// Context is getting full
 if (contextUsed > 90) {
-    llamaEngine.clearMemory()  // Clear memory only
-    // Messages still visible in chat UI
+    llamaEngine.clearMemory()  
 }
 ```
-
-**What gets deleted:**
-- ✅ Model's memory
-- ❌ Messages (you can still see them)
-
----
 
 ### 3. `undoLastMessages(count: Int = 1)`
-
-**What it does:**
-Removes the last N messages. Like an "undo" button.
-
-**Parameters:**
-- `count` - How many messages to remove (default = 1)
-
-**When to use:**
-- User wants to delete their last message
-- Remove wrong responses
-
-**Examples:**
+Removes the last N messages (like an "undo" button).
 ```kotlin
-// Remove last 1 message
 btnUndo.setOnClickListener {
-    llamaEngine.undoLastMessages(1)  // or just: undoLastMessages()
+    llamaEngine.undoLastMessages(1)  
     chatMessages.removeAt(chatMessages.size - 1)
 }
-
-// Remove last 2 messages (user + assistant pair)
-llamaEngine.undoLastMessages(2)
 ```
 
-**What gets deleted:**
-- ✅ Last N messages from the end
-
----
-
 ### 4. `getTotalMessages(): Int`
-
-**What it does:**
-Returns how many messages are in the chat.
-
-**Returns:**
-- Number of messages (0 if empty)
-
-**When to use:**
-- Check if chat is empty
-- Display message count
-- Enable/disable buttons
-
-**Examples:**
+Returns how many messages are in the chat history.
 ```kotlin
-// Check if empty
 if (llamaEngine.getTotalMessages() == 0) {
     showEmptyState()
 }
-
-// Display count
-textCount.text = "Messages: ${llamaEngine.getTotalMessages()}"
-
-// Enable undo only if there are messages
-btnUndo.isEnabled = llamaEngine.getTotalMessages() > 0
 ```
 
 ---
@@ -132,7 +119,7 @@ btnUndo.isEnabled = llamaEngine.getTotalMessages() > 0
 
 ---
 
-## Simple Complete Example
+## Complete Example
 
 ```kotlin
 class ChatActivity : AppCompatActivity() {
@@ -141,57 +128,28 @@ class ChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Load model
         llamaEngine = LlamaEngine()
-        lifecycleScope.launch {
-            llamaEngine.load("/sdcard/model.gguf")
+        lifecycleScope.launch(Dispatchers.IO) {
+            llamaEngine.loadModel(
+                modelPath = "/sdcard/model.gguf",
+                minP = 0.05f,
+                temperature = 0.7f,
+                storeChats = true,
+                contextSize = 2048
+            )
         }
         
-        // New Chat button
         btnNewChat.setOnClickListener {
             llamaEngine.clearAllHistory()
             chatMessages.clear()
-            adapter.notifyDataSetChanged()
         }
         
-        // Undo button
         btnUndo.setOnClickListener {
             if (llamaEngine.getTotalMessages() > 0) {
                 llamaEngine.undoLastMessages(1)
                 chatMessages.removeAt(chatMessages.size - 1)
-                adapter.notifyDataSetChanged()
             }
-        }
-        
-        // Show message count
-        fun updateCount() {
-            textCount.text = "Total: ${llamaEngine.getTotalMessages()}"
         }
     }
 }
 ```
-
----
- 
-## Important Notes
-
-⚠️ **Safety:**
-- All functions check if model is loaded first
-- Safe to call even if chat is empty
-- Won't crash your app
-
-✅ **Remember:**
-- Call `clearAllHistory()` for "New Chat"
-- Call `undoLastMessages()` for "Undo"
-- Call `getTotalMessages()` to check count
-- Always update your UI after clearing!
-
----
-
-## That's It!
-
-Just 4 simple functions to manage your chat:
-1. **Clear all** → `clearAllHistory()`
-2. **Clear memory only** → `clearMemory()`
-3. **Undo** → `undoLastMessages(n)`
-4. **Get count** → `getTotalMessages()`

@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../colfen/colibri" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/llama.cpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../iospackage" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../whisperfend" vcs="Git" />

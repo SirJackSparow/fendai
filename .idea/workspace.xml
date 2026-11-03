@@ -5,27 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a15be8b-5f7f-458b-a72e-40f31267ddd8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../colfen/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/consumer-rules.pro" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/proguard-rules.pro" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/src/androidTest/java/com/dg/colfen/ExampleInstrumentedTest.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/src/main/AndroidManifest.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../colfen/src/test/java/com/dg/colfen/ExampleUnitTest.kt" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../iospackage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/KoinApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/KoinApplication.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/fendaiimpl/FendAIViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/ui/nav/NavigationComponent.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/dg/chatandromedax/whispertest/WhisperViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.cmake/api/v1/reply/index-2026-09-30T04-47-46-0827.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.cmake/api/v1/reply/index-2026-09-30T04-48-04-0577.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/armeabi-v7a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.cmake/api/v1/reply/index-2026-09-30T04-19-26-0662.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.cmake/api/v1/reply/index-2026-09-30T04-48-11-0406.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.cxx/Release/74p3q5s4/x86_64/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_09_10_26_20_58_[Changes]/configure_fingerprint.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_09_10_26_20_58_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_09_10_26_20_58__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/llama.cpp/ggml/src/ggml-vulkan/ggml-vulkan.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/MainFendAI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/MainFendAI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAIManagerImplementation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/dg/fendai/implement/manager/FendAIManagerImplementation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/cpp/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/cpp/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../gradle/libs.versions.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/../settings.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/../whisperfend/.cxx/Release/5t2w5d6a/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
@@ -87,6 +104,10 @@
     &quot;accountId&quot;: &quot;9a4f2267-33a6-42cb-babb-a414b52053ca&quot;
   }
 }</component>
+  <component name="KmpPackageLockUpdaterState">{
+  &quot;jsModulesKotlinGradlePluginVersion&quot;: {},
+  &quot;wasmModulesKotlinGradlePluginVersion&quot;: {}
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -94,31 +115,39 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
-    &quot;Android App.main.executor&quot;: &quot;Run&quot;,
-    &quot;CidrDebugProfileConversion&quot;: &quot;true&quot;,
-    &quot;Gradle.RagCitationValidatorTest.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;llama__V__1.2&quot;,
-    &quot;implementationPlan.dismissed.588dfd7e-9429-41c7-b3f7-87c7cff4abc8&quot;: &quot;true&quot;,
-    &quot;implementationPlan.dismissed.60f61207-2b8e-4e5b-8858-472389962258&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "Android App.main.executor": "Run",
+    "CidrDebugProfileConversion": "true",
+    "Gradle.RagCitationValidatorTest.executor": "Run",
+    "Gradle.Upgrade Gradle wrapper.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "llama__V__1.2",
+    "implementationPlan.dismissed.588dfd7e-9429-41c7-b3f7-87c7cff4abc8": "true",
+    "implementationPlan.dismissed.60f61207-2b8e-4e5b-8858-472389962258": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/fendy24/AndroidStudioProjects/ChatAndromedax/fendai",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "show.migrate.to.gradle.popup": "false"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/.." />
+    </key>
+  </component>
   <component name="RunManager" selected="Android App.main">
     <configuration name="androidTest" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="ChatAndromedax.app.androidTest" />

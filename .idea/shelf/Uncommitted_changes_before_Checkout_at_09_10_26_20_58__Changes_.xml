@@ -1,9 +1,0 @@
-<changelist name="Uncommitted_changes_before_Checkout_at_09_10_26_20_58_[Changes]" date="1791604714836" recycled="true" deleted="true">
-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_09_10_26_20_58_[Changes]/shelved.patch" />
-  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 09/10/26 20.58 [Changes]" />
-  <binary>
-    <option name="BEFORE_PATH" value=".cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" />
-    <option name="AFTER_PATH" value=".cxx/Release/74p3q5s4/arm64-v8a/configure_fingerprint.bin" />
-    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_09_10_26_20_58_[Changes]/configure_fingerprint.bin" />
-  </binary>
-</changelist>
